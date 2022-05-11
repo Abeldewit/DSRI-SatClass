@@ -17,3 +17,11 @@ def get_rgb(x, batch_index=0, t_show=1):
     im = im.swapaxes(0,2).swapaxes(0,1)
     im = np.clip(im, a_max=1, a_min=0)
     return im
+
+def get_rgb_simple(im):
+    mx = im.max(axis=(1,2))
+    mi = im.min(axis=(1,2))   
+    im = (im - mi[:,None,None])/(mx - mi)[:,None,None]
+    im = im.swapaxes(0,2).swapaxes(0,1)
+    im = np.clip(im, a_max=1, a_min=0)
+    return im

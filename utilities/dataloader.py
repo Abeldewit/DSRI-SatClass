@@ -1,17 +1,45 @@
 import numpy as np
 import random
 import torch.utils.data as tdata
+from torch.utils.data import DataLoader, random_split
 import torch
 import pathlib
 from utilities.util_funcs import pad_tensor
 
+def create_split_dataloaders(
+    dataset: tdata.Dataset, 
+    splits: tuple, 
+    shuffle: bool = True, 
+    batch_size: int = 1,
+    ) -> tuple:
+    
+    # Create numbers for splits
+    train, val = int(len(dataset)*splits[0]*splits[0]), int(len(dataset)*splits[0]*splits[1])
+    test = len(dataset) - train - val
+    assert train + val + test == len(dataset) # sanity check
+
+    # Split the dataset
+    train_set, val_test, test_set = random_split(
+        dataset, 
+        [train, val, test], 
+        torch.Generator().manual_seed(42)
+    )
+
+    # Create dataloaders from datasets
+    train_set, val_test, test_set = \
+        DataLoader(train_set, batch_size = batch_size, shuffle = shuffle), \
+        DataLoader(val_test, batch_size = batch_size, shuffle = shuffle), \
+        DataLoader(test_set, batch_size = batch_size, shuffle = shuffle)
+    return train_set, val_test, test_set
+
 class PASTIS(tdata.Dataset):
-    def __init__(self, path_to_pastis:str, data_files: str, label_files: str, pad: bool=False, rgb_only: bool=False) -> None:
+    def __init__(self, path_to_pastis:str, data_files: str, label_files: str, pad: bool=False, rgb_only: bool=False, no_time: bool = True) -> None:
         # Path and folder names
         self.folder = path_to_pastis
         self.data_files = data_files
         self.label_files = label_files
         self.rgb = rgb_only
+        self.no_time = no_time
 
         # File structure with path and file names
         self.__file_structure = {
@@ -49,6 +77,9 @@ class PASTIS(tdata.Dataset):
 
             if self.rgb:
                 x = x[:, [2, 1, 0], :, :]
+
+            if self.no_time:
+                x = x[0, :]
             
             return (pad_tensor(x, self.max_t, pad_value=0), y) if self.pad else (x, y)
     
@@ -63,6 +94,9 @@ class PASTIS(tdata.Dataset):
 
         if self.rgb:
             x = x[:, [2, 1, 0], :, :]
+        
+        if self.no_time:
+            x = x[0, :]
         
         return (pad_tensor(x, self.max_t, pad_value=0), y) if self.pad else (x, y)
 
