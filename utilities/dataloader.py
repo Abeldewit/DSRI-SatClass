@@ -5,6 +5,7 @@ from torch.utils.data import DataLoader, random_split
 import torch
 import pathlib
 from utilities.util_funcs import pad_tensor
+from pipe import chain
 
 def create_split_dataloaders(
     dataset: tdata.Dataset, 
@@ -67,7 +68,10 @@ class PASTIS(tdata.Dataset):
         if self.counter >= len(self):
             raise StopIteration
         else:
-            x_path, y_path = self.combination[self.counter]
+            if self.no_time:
+                x_path, y_path, time = self.combination[self.counter]
+            else:
+                x_path, y_path = self.combination[self.counter]
             x, y = np.load(x_path), np.load(y_path)
             x,y = torch.from_numpy(x.astype(np.float32)), \
                     torch.from_numpy(y.astype(np.float32))
@@ -79,12 +83,16 @@ class PASTIS(tdata.Dataset):
                 x = x[:, [2, 1, 0], :, :]
 
             if self.no_time:
-                x = x[0, :]
+                x = x[time, :]
             
+            self.counter += 1
             return (pad_tensor(x, self.max_t, pad_value=0), y) if self.pad else (x, y)
     
     def __getitem__(self, item):
-        x_path, y_path = self.combination[item]
+        if self.no_time:
+            x_path, y_path, time = self.combination[item]
+        else:
+            x_path, y_path = self.combination[item]
         x, y = np.load(x_path), np.load(y_path)
         x, y = torch.from_numpy(x.astype(np.float32)), \
                 torch.from_numpy(y.astype(np.float32))
@@ -96,22 +104,33 @@ class PASTIS(tdata.Dataset):
             x = x[:, [2, 1, 0], :, :]
         
         if self.no_time:
-            x = x[0, :]
+            x = x[time, :]
         
         return (pad_tensor(x, self.max_t, pad_value=0), y) if self.pad else (x, y)
 
 
     def create_combination(self):
+        # Get the path to the wanted files
         data_structure = self.__file_structure[self.data_files]
         label_structure = self.__file_structure[self.label_files]
 
+        # Get the file names
         x_values = list(data_structure[0].glob(data_structure[1]))
         y_values = list(label_structure[0].glob(label_structure[1]))
 
+        # Get the file name ID's 
         x_ids = {x.name.split('_')[-1].split('.')[0]: x for x in x_values}
         y_ids = {y.name.split('_')[-1].split('.')[0]: y for y in y_values}
 
+        # Assert if there is the same amount of files
         assert len(set(x_ids.keys()) - set(y_ids.keys())) == len(x_values) - len(y_values)
+
+        # Create a set of the ID's that both folders share
         common_ids = list(set(x_ids.keys()) - set(set(x_ids.keys()) - set(y_ids.keys())))
+        # Use the common ids to create a combination of the files
         combined = [(x_ids[idx], y_ids[idx]) for idx in common_ids]
+        
+        # If not using time steps, create single samples of each time step (takes a while)
+        if self.no_time:
+            combined = list([[(combi[0], combi[1], i) for i in range(np.load(combi[0]).shape[0])] for combi in combined] | chain)
         return combined
