@@ -8,6 +8,7 @@ from utilities.util_funcs import pad_tensor
 from pipe import chain
 from ast import literal_eval as eval
 from functools import lru_cache
+import os
 
 def create_split_dataloaders(
     dataset: tdata.Dataset, 
@@ -47,13 +48,23 @@ class PASTIS(tdata.Dataset):
         multi_temporal: whether to use multi-temporal data
 
     """
-    def __init__(self, path_to_pastis:str, data_files: str, label_files: str, pad: bool=False, rgb_only: bool=False, multi_temporal: bool = True) -> None:
+    def __init__(
+        self, 
+        path_to_pastis:str, 
+        data_files: str, 
+        label_files: str, pad: bool=False, 
+        rgb_only: bool=False, 
+        multi_temporal: bool = True,
+        cache: str = './utilities/'
+    ) -> None:
+        super(PASTIS, self).__init__()
         # Path and folder names
         self.folder = path_to_pastis
         self.data_files = data_files
         self.label_files = label_files
         self.rgb = rgb_only
         self.multi_temporal = multi_temporal
+        self.cache_dir = cache
 
         # File structure with path and file names
         self.__file_structure = {
@@ -125,9 +136,9 @@ class PASTIS(tdata.Dataset):
     def create_combination(self) -> list:
         # Only check is whether to use time or not
         if self.multi_temporal:
-            _file = './utilities/time.txt'
+            _file = os.path.join(self.cache_dir, 'time.txt')
         else:
-            _file = './utilities/no_time.txt'
+            _file = os.path.join(self.cache_dir, 'no_time.txt')
         
         with open(_file, 'r') as f:
             time_combined = [eval(line) for line in f.readlines()]
@@ -161,3 +172,11 @@ class PASTIS(tdata.Dataset):
     #     if self.no_time:
     #         combined = list([[(combi[0], combi[1], i) for i in range(np.load(combi[0]).shape[0])] for combi in combined] | chain)
     #     return combined
+
+
+if __name__ == "__main__":
+    dl = PASTIS(
+        path_to_pastis='/Users/abel/Coding/Capgemini/DSRI-SatClass/data/PASTIS',
+        rgb_only=True, 
+        multi_temporal=True
+        )
