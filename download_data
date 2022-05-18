@@ -1,0 +1,10 @@
+#!/usr/bin/env zsh
+
+mkdir -p data
+rm -f data/PASTIS.zip
+
+wget -P 'data/' https://zenodo.org/record/5012942/files/PASTIS.zip
+
+cd data
+
+unzip PASTIS.zip

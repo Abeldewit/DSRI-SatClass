@@ -12,33 +12,36 @@ from models import UNet
 from utilities import get_rgb
 
 # %%
+# Variables to set
+EPOCHS = 50
+batch_size = 128
+best_vloss = 1_000_000.
+run_name = 'unet_simple'
+
+# %%
 pastis = PASTIS('./data/PASTIS', 'DATA_S2', 'ANNOTATIONS', rgb_only=True)
-train_loader, val_loader, test_loader = create_split_dataloaders(pastis, (0.8, 0.2), batch_size=20)
+train_loader, val_loader, test_loader = create_split_dataloaders(pastis, (0.8, 0.2), batch_size=batch_size)
 
 model = UNet(
     enc_chs=(3, 64, 128, 256),
     dec_chs=(256, 128, 64),
     retain_dim=True,
-    out_sz=(128, 128), 
-    num_class=19
+    out_sz=(128, 128),
+    num_class=20
 )
 
 # Loss function (Need to cast the output to float after argmax)
 loss_fn = torch.nn.CrossEntropyLoss()
 
 # Optimizers specified in the torch.optim package
-optimizer = torch.optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+optimizer = torch.optim.SGD(model.parameters(), lr=0.005, momentum=0.9)
 
 
 # %%
 # Initializing in a separate cell so we can easily add more epochs to the same run
 timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-writer = SummaryWriter('runs/fashion_trainer_{}'.format(timestamp))
+writer = SummaryWriter('runs/{}_{}'.format(run_name, timestamp))
 epoch_number = 0
-
-EPOCHS = 5
-batch_size = 20
-best_vloss = 1_000_000.
 
 # %%
 def train_one_epoch(epoch_index, tb_writer):
