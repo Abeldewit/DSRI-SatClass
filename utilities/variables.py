@@ -20,3 +20,26 @@ color_map = [
     (0.09019607843137255, 0.7450980392156863, 0.8117647058823529),
     (1, 1, 1)
 ]
+
+labels = [
+    'Background',
+    'Meadow',
+    'Soft winter wheat',
+    'Corn',
+    'Winter barley',
+    'Winter rapeseed',
+    'Spring barley',
+    'Sunflower',
+    'Grapevine',
+    'Beet',
+    'Winter triticale',
+    'Winter durum wheat',
+    'FVG',
+    'Potatoes',
+    'Leguminous fodder',
+    'Soybeans',
+    'Orchard',
+    'Mixed cereal',
+    'Sorghum',
+    'Void label',
+]

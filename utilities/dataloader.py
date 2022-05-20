@@ -1,5 +1,6 @@
+
 import numpy as np
-import random
+
 import torch.utils.data as tdata
 from torch.utils.data import DataLoader, random_split
 import torch
@@ -9,54 +10,49 @@ from pipe import chain
 from ast import literal_eval as eval
 from functools import lru_cache
 import os
+import json
 
-def create_split_dataloaders(
-    dataset: tdata.Dataset, 
-    splits: tuple, 
-    shuffle: bool = True, 
-    batch_size: int = 1,
-    ) -> tuple:
-    
-    # Create numbers for splits
-    train, val = int(len(dataset)*splits[0]*splits[0]), int(len(dataset)*splits[0]*splits[1])
-    test = len(dataset) - train - val
-    assert train + val + test == len(dataset) # sanity check
+def create_split_dataloaders(batch_size:int, *args, **kwargs):
+    """
+    Creates three dataloaders from the PASTIS dataset, based on a fold.
+    """
+    fold = kwargs['fold']
+    print("Creating dataloaders for fold {}".format(fold))
 
-    # Split the dataset
-    train_set, val_test, test_set = random_split(
-        dataset, 
-        [train, val, test], 
-        torch.Generator().manual_seed(42)
-    )
+    train_set = PASTIS(*args, **kwargs, subset_type='train')
+    val_set = PASTIS(*args, **kwargs, subset_type='val')
+    test_set = PASTIS(*args, **kwargs, subset_type='test')
 
-    # Create dataloaders from datasets
-    train_set, val_test, test_set = \
-        DataLoader(train_set, batch_size = batch_size, shuffle = shuffle), \
-        DataLoader(val_test, batch_size = batch_size, shuffle = shuffle), \
-        DataLoader(test_set, batch_size = batch_size, shuffle = shuffle)
-    return train_set, val_test, test_set
+    return DataLoader(train_set, batch_size=batch_size), \
+              DataLoader(val_set, batch_size=batch_size), \
+                DataLoader(test_set, batch_size=batch_size)
+
 
 class PASTIS(tdata.Dataset):
-    """
-    Data loader for PASTIS dataset. With customization options for the data output. 
-    Args:
-        path_to_pastis: path to the folder containing the data
-        data_files: path to the file containing the data
-        label_files: path to the file containing the labels
-        pad: whether to pad the tensor to the max_t
-        rgb_only: whether to only use the RGB channel
-        multi_temporal: whether to use multi-temporal data
-
-    """
     def __init__(
         self, 
         path_to_pastis:str, 
         data_files: str, 
-        label_files: str, pad: bool=False, 
+        label_files: str,
         rgb_only: bool=False, 
         multi_temporal: bool = True,
-        cache: str = './utilities/'
+        fold: int = 1,
+        subset_type = 'train',
+        device: str = 'cpu',
     ) -> None:
+        """
+        Data loader for PASTIS dataset. With customization options for the data output. 
+        Args:
+            path_to_pastis (str): path to the folder containing the data
+            data_files (str): path to the file containing the data
+            label_files (str): path to the file containing the labels
+            rgb_only (bool): whether to only use the RGB channel, true will yield (3, H, W), false will yield (10, H, W)
+            multi_temporal (bool): whether to use multi-temporal data, true will yield a shape of (t, c, h, w), false will yield a shape of (c, h, w)
+            cache_dir (str): path to the cache directory, default is './utilities/'
+            fold (int): which fold to use, default is 1
+            subset_type (str): which subset to use, default is 'train', other options are 'test', 'val'
+            device (str): which device to load the tensors to, default is 'cpu'
+        """
         super(PASTIS, self).__init__()
         # Path and folder names
         self.folder = path_to_pastis
@@ -64,23 +60,20 @@ class PASTIS(tdata.Dataset):
         self.label_files = label_files
         self.rgb = rgb_only
         self.multi_temporal = multi_temporal
-        self.cache_dir = cache
-
-        # File structure with path and file names
-        self.__file_structure = {
-            'DATA_S2': (pathlib.Path(self.folder, 'DATA_S2'), 'S2_*.npy'),
-            'ANNOTATIONS': (pathlib.Path(self.folder, 'ANNOTATIONS'), 'TARGET_*.npy'),
-            'HEATMAP': (pathlib.Path(self.folder, 'INSTANCE_ANNOTATIONS'), 'HEATMAP_*.npy'),
-            'INSTANCES': (pathlib.Path(self.folder, 'INSTANCE_ANNOTATIONS'), 'INSTANCES*.npy'),
-            'ZONES': (pathlib.Path(self.folder, 'INSTANCE_ANNOTATIONS'), 'ZONES_*.npy'),
-        }
-        self.combination = self.create_combination()
+        self.fold = fold
+        self.subset_type = subset_type
+        self.device = device
 
         # Parameters 
         self.max_t = 61 # max time steps for padding
-        self.pad = pad # whether to pad or not
+        self.pad = multi_temporal # whether to pad or not (depends on multi_temporal)
 
-        
+        if not self.multi_temporal and self.pad:
+            raise ValueError('Padding is only neccesary for multi-temporal data.')
+
+        self.metadata = self._read_metadata()
+        self.combination = self._create_combination()
+
     def __len__(self) -> int:
         return len(self.combination)   
         
@@ -92,91 +85,151 @@ class PASTIS(tdata.Dataset):
         if self.counter >= len(self):
             raise StopIteration
         else:
-            if not self.multi_temporal:
-                x_path, y_path, time = self.combination[self.counter]
-            else:
-                x_path, y_path = self.combination[self.counter]
-            x, y = np.load(x_path), np.load(y_path)
-            x,y = torch.from_numpy(x.astype(np.float32)), \
-                    torch.from_numpy(y.astype(np.float32))
-
-            if y.shape[0] == 3:
-                y = y[0, :, :] 
-
-            if self.rgb:
-                x = x[:, [2, 1, 0], :, :]
-
-            if not self.multi_temporal:
-                x = x[time, :]
-            
-            self.counter += 1
-            return (pad_tensor(x, self.max_t, pad_value=0), y) if self.pad else (x, y)
+            return self.__getitem__(self.counter)
     
     def __getitem__(self, item):
-        if not self.multi_temporal:
-            x_path, y_path, time = self.combination[item]
-        else:
-            x_path, y_path = self.combination[item]
+        if not isinstance(item, int):
+            raise TypeError('Item must be an integer.')
+        if item >= len(self):
+            raise IndexError('Item out of range.')
+
+
+        # Get the file paths, and dates or time-step (based on multi-temporal-ness)
+        if self.multi_temporal:
+            # Get the file paths, and dates
+            sample_info = self.combination[item]
+            x_path, y_path, time = sample_info['data_path'], sample_info['label_path'], sample_info['dates']
+        elif not self.multi_temporal:
+            # Get the file paths, and time-step
+            sample_info = self.combination[item]
+            x_path, y_path, time = sample_info['data_path'], sample_info['label_path'], sample_info['time']
+
+        # Load the data from the file and convert to tensor
         x, y = np.load(x_path), np.load(y_path)
         x, y = torch.from_numpy(x.astype(np.float32)), \
                 torch.from_numpy(y.astype(np.float32))
         
-        if y.shape[0] == 3:
-            y = y[0, :, :]
+        # The labels may have more data than just the classes, 
+        # so we need to get the correct shape.
+        if y.shape[0] == 3: y = y[0, :, :]
 
-        if self.rgb:
-            x = x[:, [2, 1, 0], :, :]
+        # If we are using only RGB channels, 
+        # we need to select and swap the channels.
+        if self.rgb: x = x[:, [2, 1, 0], :, :]
         
-        if not self.multi_temporal:
-            x = x[time, :]
-        
-        return (pad_tensor(x, self.max_t, pad_value=0), y) if self.pad else (x, y)
-
-    @lru_cache(maxsize=None)
-    def create_combination(self) -> list:
-        # Only check is whether to use time or not
         if self.multi_temporal:
-            _file = os.path.join(self.cache_dir, 'time.txt')
+            # If we are padding the tensor, for multi-temporal data,
+            # we need to pad the tensor to the max_t.
+            if self.pad: x = pad_tensor(x, self.max_t, pad_value=0)
+
+        elif not self.multi_temporal:
+            # Next, we need to take only one time-step
+            x = x[time, :, :, :]
+
+        # Move the tensors to the correct device
+        x = x.to(self.device)
+        y = y.to(self.device)
+
+        # print(x.shape, y.shape)
+
+        # Return the data and the labels
+        return x, y, time
+
+    def _create_combination(self):
+        # Create the feature sets based on the fold number
+        train, test, val = self._create_folds()
+
+        # The dataset will only be one type of subset
+        features = None
+        if self.subset_type == 'train':
+            features = train
+        elif self.subset_type == 'test':
+            features = test
+        elif self.subset_type == 'val':
+            features = val
         else:
-            _file = os.path.join(self.cache_dir, 'no_time.txt')
+            raise ValueError('subset_type must be one of train, test, val')
+
+        # Create the combination of the features and the time steps
+        # with all time steps combined in one sample (multi-temporal).
+        multi_temporal_combinations = [
+            {
+                'data_path': os.path.join(self.folder, self.data_files, 'S2_{}.npy'.format(f['properties']['ID_PATCH'])),
+                'label_path': os.path.join(self.folder, self.label_files, 'TARGET_{}.npy'.format(f['properties']['ID_PATCH'])),
+                'dates': f['properties']['dates-S2'],
+            }
+            for f in features
+        ]
+
+        # Create the combination of the features and the time steps,
+        # with a sample for each time step.
+        no_temporal_combinations = []
+        for cmb in multi_temporal_combinations:
+            time_length = len(cmb['dates'])
+            for i in range(time_length):
+                no_temporal_combinations.append(
+                    {
+                        'data_path': cmb['data_path'],
+                        'label_path': cmb['label_path'],
+                        'time': i,
+                    }
+                )
         
-        with open(_file, 'r') as f:
-            time_combined = [eval(line) for line in f.readlines()]
-            return time_combined
+        # Return either, based on the multi_temporal flag.
+        if self.multi_temporal:
+            return multi_temporal_combinations
+        else:
+            return no_temporal_combinations
 
-    # def create_combination_old(self):
-    #     ## OBSCURE FUNCTION, DO NOT USE
-    #     ## PATHS AND FILE NAMES ARE HARDCODED
+    def _read_metadata(self) -> dict:
+        """
+        This function will read the metadata file and set the class variables.
+        """
+        with open(os.path.join(self.folder, 'metadata.geojson'), 'r') as f:
+            metadata = json.load(f)
+            return metadata
 
-    #     # Get the path to the wanted files
-    #     data_structure = self.__file_structure[self.data_files]
-    #     label_structure = self.__file_structure[self.label_files]
+    def _create_folds(self, folds: dict = None) -> None:
+        """
+        This function will create the folds for the cross validation.
+        The folds are predefined in 'metadata.geojson', but can be overwritten
+        Args:
+            folds: A dictionary with the folds.
+        """
+        if not folds:
+            folds = {
+                1: {'train': (1, 2, 3), 'test': 4, 'val': 5},
+                2: {'train': (2, 3, 4), 'test': 5, 'val': 1},
+                3: {'train': (3, 4, 5), 'test': 1, 'val': 2},
+                4: {'train': (4, 5, 1), 'test': 2, 'val': 3},
+                5: {'train': (5, 1, 2), 'test': 3, 'val': 4},
+            }
 
-    #     # Get the file names
-    #     x_values = list(data_structure[0].glob(data_structure[1]))
-    #     y_values = list(label_structure[0].glob(label_structure[1]))
+        # Get the fold id for each instance
+        fold_indexes = np.array([f['properties']['Fold'] for f in self.metadata['features']])
 
-    #     # Get the file name ID's 
-    #     x_ids = {x.name.split('_')[-1].split('.')[0]: x for x in x_values}
-    #     y_ids = {y.name.split('_')[-1].split('.')[0]: y for y in y_values}
+        # Get the indices for each fold
+        train_indexes = np.where(np.isin(fold_indexes, [folds[self.fold]['train']]))[0]
+        test_indexes = np.where(fold_indexes == folds[self.fold]['test'])[0]
+        val_indexes = np.where(fold_indexes == folds[self.fold]['val'])[0]
 
-    #     # Assert if there is the same amount of files
-    #     assert len(set(x_ids.keys()) - set(y_ids.keys())) == len(x_values) - len(y_values)
+        # Get the feature data for each fold
+        train_features = np.take(self.metadata['features'], train_indexes)
+        test_features = np.take(self.metadata['features'], test_indexes)
+        val_features = np.take(self.metadata['features'], val_indexes)
 
-    #     # Create a set of the ID's that both folders share
-    #     common_ids = list(set(x_ids.keys()) - set(set(x_ids.keys()) - set(y_ids.keys())))
-    #     # Use the common ids to create a combination of the files
-    #     combined = [(x_ids[idx], y_ids[idx]) for idx in common_ids]
+        return train_features, test_features, val_features
+
+
         
-    #     # If not using time steps, create single samples of each time step (takes a while)
-    #     if self.no_time:
-    #         combined = list([[(combi[0], combi[1], i) for i in range(np.load(combi[0]).shape[0])] for combi in combined] | chain)
-    #     return combined
+        
 
 
 if __name__ == "__main__":
     dl = PASTIS(
         path_to_pastis='/Users/abel/Coding/Capgemini/DSRI-SatClass/data/PASTIS',
+        data_files='DATA_S2',
+        label_files='ANNOTATIONS',
         rgb_only=True, 
         multi_temporal=True
         )

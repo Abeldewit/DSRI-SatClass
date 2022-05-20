@@ -1,0 +1,242 @@
+{
+    "Experiment 1": {
+        "model": "UNet",
+        "rgb_only": true,
+        "multi_temporal": false,
+        "fold": 1
+    },
+    "Experiment 2": {
+        "model": "UNet",
+        "rgb_only": true,
+        "multi_temporal": false,
+        "fold": 2
+    },
+    "Experiment 3": {
+        "model": "UNet",
+        "rgb_only": true,
+        "multi_temporal": false,
+        "fold": 3
+    },
+    "Experiment 4": {
+        "model": "UNet",
+        "rgb_only": true,
+        "multi_temporal": false,
+        "fold": 4
+    },
+    "Experiment 5": {
+        "model": "UNet",
+        "rgb_only": true,
+        "multi_temporal": false,
+        "fold": 5
+    },
+    "Experiment 6": {
+        "model": "UNet",
+        "rgb_only": false,
+        "multi_temporal": false,
+        "fold": 1
+    },
+    "Experiment 7": {
+        "model": "UNet",
+        "rgb_only": false,
+        "multi_temporal": false,
+        "fold": 2
+    },
+    "Experiment 8": {
+        "model": "UNet",
+        "rgb_only": false,
+        "multi_temporal": false,
+        "fold": 3
+    },
+    "Experiment 9": {
+        "model": "UNet",
+        "rgb_only": false,
+        "multi_temporal": false,
+        "fold": 4
+    },
+    "Experiment 10": {
+        "model": "UNet",
+        "rgb_only": false,
+        "multi_temporal": false,
+        "fold": 5
+    },
+    "Experiment 11": {
+        "model": "UTAE",
+        "rgb_only": true,
+        "multi_temporal": true,
+        "fold": 1
+    },
+    "Experiment 12": {
+        "model": "UTAE",
+        "rgb_only": true,
+        "multi_temporal": true,
+        "fold": 2
+    },
+    "Experiment 13": {
+        "model": "UTAE",
+        "rgb_only": true,
+        "multi_temporal": true,
+        "fold": 3
+    },
+    "Experiment 14": {
+        "model": "UTAE",
+        "rgb_only": true,
+        "multi_temporal": true,
+        "fold": 4
+    },
+    "Experiment 15": {
+        "model": "UTAE",
+        "rgb_only": true,
+        "multi_temporal": true,
+        "fold": 5
+    },
+    "Experiment 16": {
+        "model": "UTAE",
+        "rgb_only": false,
+        "multi_temporal": true,
+        "fold": 1
+    },
+    "Experiment 17": {
+        "model": "UTAE",
+        "rgb_only": false,
+        "multi_temporal": true,
+        "fold": 2
+    },
+    "Experiment 18": {
+        "model": "UTAE",
+        "rgb_only": false,
+        "multi_temporal": true,
+        "fold": 3
+    },
+    "Experiment 19": {
+        "model": "UTAE",
+        "rgb_only": false,
+        "multi_temporal": true,
+        "fold": 4
+    },
+    "Experiment 20": {
+        "model": "UTAE",
+        "rgb_only": false,
+        "multi_temporal": true,
+        "fold": 5
+    },
+    "Experiment 21": {
+        "model": "ViT",
+        "rgb_only": true,
+        "multi_temporal": true,
+        "fold": 1
+    },
+    "Experiment 22": {
+        "model": "ViT",
+        "rgb_only": true,
+        "multi_temporal": true,
+        "fold": 2
+    },
+    "Experiment 23": {
+        "model": "ViT",
+        "rgb_only": true,
+        "multi_temporal": true,
+        "fold": 3
+    },
+    "Experiment 24": {
+        "model": "ViT",
+        "rgb_only": true,
+        "multi_temporal": true,
+        "fold": 4
+    },
+    "Experiment 25": {
+        "model": "ViT",
+        "rgb_only": true,
+        "multi_temporal": true,
+        "fold": 5
+    },
+    "Experiment 26": {
+        "model": "ViT",
+        "rgb_only": true,
+        "multi_temporal": false,
+        "fold": 1
+    },
+    "Experiment 27": {
+        "model": "ViT",
+        "rgb_only": true,
+        "multi_temporal": false,
+        "fold": 2
+    },
+    "Experiment 28": {
+        "model": "ViT",
+        "rgb_only": true,
+        "multi_temporal": false,
+        "fold": 3
+    },
+    "Experiment 29": {
+        "model": "ViT",
+        "rgb_only": true,
+        "multi_temporal": false,
+        "fold": 4
+    },
+    "Experiment 30": {
+        "model": "ViT",
+        "rgb_only": true,
+        "multi_temporal": false,
+        "fold": 5
+    },
+    "Experiment 31": {
+        "model": "ViT",
+        "rgb_only": false,
+        "multi_temporal": true,
+        "fold": 1
+    },
+    "Experiment 32": {
+        "model": "ViT",
+        "rgb_only": false,
+        "multi_temporal": true,
+        "fold": 2
+    },
+    "Experiment 33": {
+        "model": "ViT",
+        "rgb_only": false,
+        "multi_temporal": true,
+        "fold": 3
+    },
+    "Experiment 34": {
+        "model": "ViT",
+        "rgb_only": false,
+        "multi_temporal": true,
+        "fold": 4
+    },
+    "Experiment 35": {
+        "model": "ViT",
+        "rgb_only": false,
+        "multi_temporal": true,
+        "fold": 5
+    },
+    "Experiment 36": {
+        "model": "ViT",
+        "rgb_only": false,
+        "multi_temporal": false,
+        "fold": 1
+    },
+    "Experiment 37": {
+        "model": "ViT",
+        "rgb_only": false,
+        "multi_temporal": false,
+        "fold": 2
+    },
+    "Experiment 38": {
+        "model": "ViT",
+        "rgb_only": false,
+        "multi_temporal": false,
+        "fold": 3
+    },
+    "Experiment 39": {
+        "model": "ViT",
+        "rgb_only": false,
+        "multi_temporal": false,
+        "fold": 4
+    },
+    "Experiment 40": {
+        "model": "ViT",
+        "rgb_only": false,
+        "multi_temporal": false,
+        "fold": 5
+    }
+}

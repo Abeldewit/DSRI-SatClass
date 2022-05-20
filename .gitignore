@@ -5,3 +5,5 @@ data/*
 *.ipynb
 model_*
 runs/*
+*.DS_Store
+.vscode/*
