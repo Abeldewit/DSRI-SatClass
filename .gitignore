@@ -1,4 +1,4 @@
-data/*
+src/data/*
 .venv/
 *checkpoint*
 *__pycache__*
