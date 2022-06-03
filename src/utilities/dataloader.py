@@ -2,9 +2,10 @@ import numpy as np
 import torch.utils.data as tdata
 from torch.utils.data import DataLoader
 import torch
-from utilities.util_funcs import pad_tensor
+from .util_funcs import pad_tensor
 import os
 import json
+from datetime import datetime
 
 def create_split_dataloaders(batch_size:int, *args, **kwargs):
     """
@@ -31,6 +32,7 @@ class PASTIS(tdata.Dataset):
         rgb_only: bool=False, 
         multi_temporal: bool = True,
         fold: int = 1,
+        reference_date="2018-09-01",
         subset_type = 'train',
         device: str = 'cpu',
     ) -> None:
@@ -55,6 +57,7 @@ class PASTIS(tdata.Dataset):
         self.rgb = rgb_only
         self.multi_temporal = multi_temporal
         self.fold = fold
+        self.reference_date = datetime.strptime(reference_date, '%Y-%m-%d')
         self.subset_type = subset_type
         self.device = device
 
@@ -92,7 +95,12 @@ class PASTIS(tdata.Dataset):
         if self.multi_temporal:
             # Get the file paths, and dates
             sample_info = self.combination[item]
-            x_path, y_path, time = sample_info['data_path'], sample_info['label_path'], sample_info['dates']
+            x_path, y_path, dates = sample_info['data_path'], sample_info['label_path'], sample_info['dates']
+            # Convert the times to distance to reference
+            dates = [datetime.strptime(str(d), '%Y%m%d') for d in dates.values()]
+            diff = [(d - self.reference_date).days for d in dates]
+            time = diff
+
         elif not self.multi_temporal:
             # Get the file paths, and time-step
             sample_info = self.combination[item]
@@ -115,6 +123,8 @@ class PASTIS(tdata.Dataset):
             # If we are padding the tensor, for multi-temporal data,
             # we need to pad the tensor to the max_t.
             if self.pad: x = pad_tensor(x, self.max_t, pad_value=0)
+            # We also then need to 'pad' the time-step to the max_t.
+            time = np.pad(time, (0, self.max_t - len(time)), 'constant').flatten()
 
         elif not self.multi_temporal:
             # Next, we need to take only one time-step
