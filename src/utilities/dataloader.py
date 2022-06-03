@@ -35,6 +35,7 @@ class PASTIS(tdata.Dataset):
         reference_date="2018-09-01",
         subset_type = 'train',
         device: str = 'cpu',
+        pre_load = False,
     ) -> None:
         """
         Data loader for PASTIS dataset. With customization options for the data output. 
@@ -60,6 +61,8 @@ class PASTIS(tdata.Dataset):
         self.reference_date = datetime.strptime(reference_date, '%Y-%m-%d')
         self.subset_type = subset_type
         self.device = device
+        self.pre_load = pre_load
+        self.done_loading = False if self.pre_load else True
 
         # Parameters 
         self.max_t = 61 # max time steps for padding
@@ -70,6 +73,22 @@ class PASTIS(tdata.Dataset):
 
         self.metadata = self._read_metadata()
         self.combination = self._create_combination()
+
+        if self.pre_load:
+            self.load_all()
+            self.done_loading = True
+
+    def load_all(self):
+        """
+        Loads all the data into memory.
+        """
+        self.loaded_data = []
+
+        for i in range(len(self)):
+            data = self.__getitem__(i)
+            self.loaded_data.append(data)
+
+
 
     def __len__(self) -> int:
         return len(self.combination)   
@@ -90,6 +109,10 @@ class PASTIS(tdata.Dataset):
         if item >= len(self):
             raise IndexError('Item out of range.')
 
+
+        # If we're pre-loading, skipp all below and retrieve from ram
+        if self.pre_load and self.done_loading:
+            return self.loaded_data[item]
 
         # Get the file paths, and dates or time-step (based on multi-temporal-ness)
         if self.multi_temporal:
@@ -235,5 +258,6 @@ if __name__ == "__main__":
         data_files='DATA_S2',
         label_files='ANNOTATIONS',
         rgb_only=True, 
-        multi_temporal=True
+        multi_temporal=True,
+        pre_load=True
         )
