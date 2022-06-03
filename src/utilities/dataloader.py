@@ -112,7 +112,11 @@ class PASTIS(tdata.Dataset):
 
         # If we're pre-loading, skipp all below and retrieve from ram
         if self.pre_load and self.done_loading:
-            return self.loaded_data[item]
+            data =  self.loaded_data[item]
+            x, y, time = data
+            x.to(self.device)
+            y.to(self.device)
+            return x, y, time
 
         # Get the file paths, and dates or time-step (based on multi-temporal-ness)
         if self.multi_temporal:
@@ -154,8 +158,9 @@ class PASTIS(tdata.Dataset):
             x = x[time, :, :, :]
 
         # Move the tensors to the correct device
-        x = x.to(self.device)
-        y = y.to(self.device)
+        if not self.pre_load:
+            x = x.to(self.device)
+            y = y.to(self.device)
 
         # print(x.shape, y.shape)
 
