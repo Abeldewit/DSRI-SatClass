@@ -7,7 +7,7 @@ import os
 import json
 from datetime import datetime
 
-def create_split_dataloaders(batch_size:int, *args, **kwargs):
+def create_split_dataloaders(batch_size:int, shuffle:bool, *args, **kwargs):
     """
     Creates three dataloaders from the PASTIS dataset, based on a fold.
     """
@@ -18,9 +18,9 @@ def create_split_dataloaders(batch_size:int, *args, **kwargs):
     val_set = PASTIS(*args, **kwargs, subset_type='val')
     test_set = PASTIS(*args, **kwargs, subset_type='test')
 
-    return DataLoader(train_set, batch_size=batch_size), \
-              DataLoader(val_set, batch_size=batch_size), \
-                DataLoader(test_set, batch_size=batch_size)
+    return DataLoader(train_set, batch_size=batch_size, shuffle=shuffle), \
+              DataLoader(val_set, batch_size=batch_size, shuffle=shuffle), \
+                DataLoader(test_set, batch_size=batch_size, shuffle=shuffle)
 
 
 class PASTIS(tdata.Dataset):
