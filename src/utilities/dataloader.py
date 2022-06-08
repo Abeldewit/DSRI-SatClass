@@ -36,6 +36,7 @@ class PASTIS(tdata.Dataset):
         reference_date="2018-09-01",
         subset_type = 'train',
         device: str = 'cpu',
+        shuffle: bool = False,
         pre_load = False,
     ) -> None:
         """
@@ -74,6 +75,9 @@ class PASTIS(tdata.Dataset):
 
         self.metadata = self._read_metadata()
         self.combination = self._create_combination()
+
+        if shuffle:
+            np.random.shuffle(self.combination)
 
         if self.pre_load:
             self.load_all()
