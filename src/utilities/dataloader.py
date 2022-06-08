@@ -6,6 +6,7 @@ from .util_funcs import pad_tensor
 import os
 import json
 from datetime import datetime
+import multiprocessing as mp
 
 def create_split_dataloaders(batch_size:int, shuffle:bool, *args, **kwargs):
     """
@@ -82,11 +83,10 @@ class PASTIS(tdata.Dataset):
         """
         Loads all the data into memory.
         """
-        self.loaded_data = []
+        with mp.Pool(mp.cpu_count()) as pool:
+            completed = pool.starmap(self._read_files, self.combination)
 
-        for i in range(len(self)):
-            data = self.__getitem__(i)
-            self.loaded_data.append(data)
+        self.loaded_data = completed
 
 
 
@@ -117,54 +117,40 @@ class PASTIS(tdata.Dataset):
             # x.to(self.device)
             # y.to(self.device)
             return x, y, time
+        
+        else:
+            return self._read_files(self.combination[item])
 
-        # Get the file paths, and dates or time-step (based on multi-temporal-ness)
+        
+    def _read_files(self, sample):
+        x_path, y_path, time = sample['data_path'], sample['label_path'], sample['time']
+        
         if self.multi_temporal:
-            # Get the file paths, and dates
-            sample_info = self.combination[item]
-            x_path, y_path, dates = sample_info['data_path'], sample_info['label_path'], sample_info['dates']
-            # Convert the times to distance to reference
-            dates = [datetime.strptime(str(d), '%Y%m%d') for d in dates.values()]
-            diff = [(d - self.reference_date).days for d in dates]
+            time = [datetime.strptime(str(d), '%Y%m%d') for d in time.values()]
+            diff = [(d - self.reference_date).days for d in time]
             time = diff
-
-        elif not self.multi_temporal:
-            # Get the file paths, and time-step
-            sample_info = self.combination[item]
-            x_path, y_path, time = sample_info['data_path'], sample_info['label_path'], sample_info['time']
 
         # Load the data from the file and convert to tensor
         x, y = np.load(x_path), np.load(y_path)
-        x, y = torch.from_numpy(x.astype(np.float32)), \
-                torch.from_numpy(y.astype(np.float32))
-        
+        # x = torch.from_numpy(x.astype(np.float32))
+        # y = torch.from_numpy(y.astype(np.float32))
+
         # The labels may have more data than just the classes, 
         # so we need to get the correct shape.
         if y.shape[0] == 3: y = y[0, :, :]
-
+        
         # If we are using only RGB channels, 
         # we need to select and swap the channels.
         if self.rgb: x = x[:, [2, 1, 0], :, :]
-        
+
         if self.multi_temporal:
-            # If we are padding the tensor, for multi-temporal data,
-            # we need to pad the tensor to the max_t.
-            if self.pad: x = pad_tensor(x, self.max_t, pad_value=0)
-            # We also then need to 'pad' the time-step to the max_t.
+            padlen = self.max_t - x.shape[0]
+            x = np.pad(x, ((0, padlen), (0, 0), (0, 0), (0, 0)), 'constant')
             time = np.pad(time, (0, self.max_t - len(time)), 'constant').flatten()
 
         elif not self.multi_temporal:
-            # Next, we need to take only one time-step
             x = x[time, :, :, :]
-
-        # # Move the tensors to the correct device
-        # if not self.pre_load:
-        #     x = x.to(self.device)
-        #     y = y.to(self.device)
-
-        # print(x.shape, y.shape)
-
-        # Return the data and the labels
+        
         return x, y, time
 
     def _create_combination(self):
