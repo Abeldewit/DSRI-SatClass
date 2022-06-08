@@ -83,8 +83,10 @@ class PASTIS(tdata.Dataset):
         """
         Loads all the data into memory.
         """
+        max_cpu = min(50, mp.cpu_count())
         with mp.Pool(mp.cpu_count()) as pool:
-            completed = pool.starmap(self._read_files, self.combination)
+            combi_as_args = [(c,) for c in self.combination]
+            completed = pool.starmap(self._read_files, combi_as_args)
 
         self.loaded_data = completed
 
