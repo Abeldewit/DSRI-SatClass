@@ -1,31 +1,30 @@
 import numpy as np
-import torch.utils.data as tdata
-from torch.utils.data import DataLoader
-import torch
-from .util_funcs import pad_tensor
+# from .util_funcs import pad_tensor
 import os
 import json
 from datetime import datetime
+import multiprocessing as mp
+import torch
+from torch.nn import functional as F
 
-def create_split_dataloaders(batch_size:int, shuffle:bool, *args, **kwargs):
+def create_split_dataloaders(*args, **kwargs):
     """
-    Creates three dataloaders from the PASTIS dataset, based on a fold.
+    Create dataloaders for training and validation.
     """
-    fold = kwargs['fold']
-    print("Creating dataloaders for fold {}".format(fold))
+    fold = kwargs.get('fold', 1)
+    shuffle = kwargs.get('shuffle', False)
+    batch_size = kwargs.get('batch_size', 1)
 
-    train_set = PASTIS(*args, **kwargs, subset_type='train')
-    val_set = PASTIS(*args, **kwargs, subset_type='val')
-    test_set = PASTIS(*args, **kwargs, subset_type='test')
+    train_set = FastDataLoader(*args, **kwargs, subset_type='train')
+    val_set = FastDataLoader(*args, **kwargs, subset_type='val')
+    test_set = FastDataLoader(*args, **kwargs, subset_type='test')
 
-    return DataLoader(train_set, batch_size=batch_size, shuffle=shuffle), \
-              DataLoader(val_set, batch_size=batch_size, shuffle=shuffle), \
-                DataLoader(test_set, batch_size=batch_size, shuffle=shuffle)
+    return train_set, val_set, test_set
 
 
-class PASTIS(tdata.Dataset):
+class FastDataLoader:
     def __init__(
-        self, 
+        self,
         path_to_pastis:str, 
         data_files: str, 
         label_files: str,
@@ -34,138 +33,95 @@ class PASTIS(tdata.Dataset):
         fold: int = 1,
         reference_date="2018-09-01",
         subset_type = 'train',
-        device: str = 'cpu',
-        pre_load = False,
-    ) -> None:
-        """
-        Data loader for PASTIS dataset. With customization options for the data output. 
-        Args:
-            path_to_pastis (str): path to the folder containing the data
-            data_files (str): path to the file containing the data
-            label_files (str): path to the file containing the labels
-            rgb_only (bool): whether to only use the RGB channel, true will yield (3, H, W), false will yield (10, H, W)
-            multi_temporal (bool): whether to use multi-temporal data, true will yield a shape of (t, c, h, w), false will yield a shape of (c, h, w)
-            cache_dir (str): path to the cache directory, default is './utilities/'
-            fold (int): which fold to use, default is 1
-            subset_type (str): which subset to use, default is 'train', other options are 'test', 'val'
-            device (str): which device to load the tensors to, default is 'cpu'
-        """
-        super(PASTIS, self).__init__()
-        # Path and folder names
+        shuffle: bool = True,
+        batch_size: int = 1,
+        ):
+        # Path names
         self.folder = path_to_pastis
         self.data_files = data_files
         self.label_files = label_files
+
+        # Data type parameters
         self.rgb = rgb_only
         self.multi_temporal = multi_temporal
+
+        # Data split parameters
         self.fold = fold
-        self.reference_date = datetime.strptime(reference_date, '%Y-%m-%d')
         self.subset_type = subset_type
-        self.device = device
-        self.pre_load = pre_load
-        self.done_loading = False if self.pre_load else True
 
-        # Parameters 
-        self.max_t = 61 # max time steps for padding
-        self.pad = multi_temporal # whether to pad or not (depends on multi_temporal)
+        # Temporal parameters
+        self.max_t = 61 # The maximum number of time steps
+        self.reference_date = datetime.strptime(reference_date, '%Y-%m-%d')
 
-        if not self.multi_temporal and self.pad:
-            raise ValueError('Padding is only neccesary for multi-temporal data.')
+        # Batch parameters
+        self.batch_size = batch_size
 
+        # Data loading functions
         self.metadata = self._read_metadata()
         self.combination = self._create_combination()
-
-        if self.pre_load:
-            self.load_all()
-            self.done_loading = True
-
-    def load_all(self):
-        """
-        Loads all the data into memory.
-        """
-        self.loaded_data = []
-
-        for i in range(len(self)):
-            data = self.__getitem__(i)
-            self.loaded_data.append(data)
-
-
+        if shuffle:
+            np.random.shuffle(self.combination)
 
     def __len__(self) -> int:
-        return len(self.combination)   
-        
-    def __iter__(self)-> iter:
-        self.counter = 0
+        return len(self.combination)
+
+    def __iter__(self):
+        self.counter = -1
         return self
 
-    def __next__(self) -> tuple:
+    def __next__(self):
         if self.counter >= len(self):
             raise StopIteration
-        else:
-            return self.__getitem__(self.counter)
-    
-    def __getitem__(self, item):
-        if not isinstance(item, int):
-            raise TypeError('Item must be an integer.')
-        if item >= len(self):
-            raise IndexError('Item out of range.')
+        self.counter += 1
+        
+        # Get the combination for the current counter
+        bracket = (self.counter*self.batch_size, (self.counter+1)*self.batch_size)
+        batch = [(b,) for b in self.combination[bracket[0]:bracket[1]]]
+        
+        # Multi-process reading the data
+        with mp.Pool(mp.cpu_count()) as pool:
+            completed = pool.starmap(self._read_files, batch)
+        
+        # Stack and convert to tensor
+        x = np.stack([c[0] for c in completed]).astype(np.float32)
+        x = torch.from_numpy(x)
+        y = np.stack([c[1] for c in completed]).astype(np.float32)
+        y = torch.from_numpy(y)
+        time = np.stack([c[2] for c in completed])
 
-
-        # If we're pre-loading, skipp all below and retrieve from ram
-        if self.pre_load and self.done_loading:
-            data =  self.loaded_data[item]
-            x, y, time = data
-            # x.to(self.device)
-            # y.to(self.device)
-            return x, y, time
-
-        # Get the file paths, and dates or time-step (based on multi-temporal-ness)
+        return x, y, time
+        
+    def _read_files(self, sample):
+        x_path, y_path, time = sample['data_path'], sample['label_path'], sample['time']
+        
         if self.multi_temporal:
-            # Get the file paths, and dates
-            sample_info = self.combination[item]
-            x_path, y_path, dates = sample_info['data_path'], sample_info['label_path'], sample_info['dates']
-            # Convert the times to distance to reference
-            dates = [datetime.strptime(str(d), '%Y%m%d') for d in dates.values()]
-            diff = [(d - self.reference_date).days for d in dates]
+            time = [datetime.strptime(str(d), '%Y%m%d') for d in time.values()]
+            diff = [(d - self.reference_date).days for d in time]
             time = diff
-
-        elif not self.multi_temporal:
-            # Get the file paths, and time-step
-            sample_info = self.combination[item]
-            x_path, y_path, time = sample_info['data_path'], sample_info['label_path'], sample_info['time']
 
         # Load the data from the file and convert to tensor
         x, y = np.load(x_path), np.load(y_path)
-        x, y = torch.from_numpy(x.astype(np.float32)), \
-                torch.from_numpy(y.astype(np.float32))
-        
+        # x = torch.from_numpy(x.astype(np.float32))
+        # y = torch.from_numpy(y.astype(np.float32))
+
         # The labels may have more data than just the classes, 
         # so we need to get the correct shape.
         if y.shape[0] == 3: y = y[0, :, :]
-
+        
         # If we are using only RGB channels, 
         # we need to select and swap the channels.
         if self.rgb: x = x[:, [2, 1, 0], :, :]
-        
+
         if self.multi_temporal:
-            # If we are padding the tensor, for multi-temporal data,
-            # we need to pad the tensor to the max_t.
-            if self.pad: x = pad_tensor(x, self.max_t, pad_value=0)
-            # We also then need to 'pad' the time-step to the max_t.
+            padlen = self.max_t - x.shape[0]
+            x = np.pad(x, ((0, padlen), (0, 0), (0, 0), (0, 0)), 'constant')
             time = np.pad(time, (0, self.max_t - len(time)), 'constant').flatten()
 
         elif not self.multi_temporal:
-            # Next, we need to take only one time-step
             x = x[time, :, :, :]
-
-        # # Move the tensors to the correct device
-        # if not self.pre_load:
-        #     x = x.to(self.device)
-        #     y = y.to(self.device)
-
-        # print(x.shape, y.shape)
-
-        # Return the data and the labels
+        
         return x, y, time
+
 
     def _create_combination(self):
         # Create the feature sets based on the fold number
@@ -188,7 +144,7 @@ class PASTIS(tdata.Dataset):
             {
                 'data_path': os.path.join(self.folder, self.data_files, 'S2_{}.npy'.format(f['properties']['ID_PATCH'])),
                 'label_path': os.path.join(self.folder, self.label_files, 'TARGET_{}.npy'.format(f['properties']['ID_PATCH'])),
-                'dates': f['properties']['dates-S2'],
+                'time': f['properties']['dates-S2'],
             }
             for f in features
         ]
@@ -197,7 +153,7 @@ class PASTIS(tdata.Dataset):
         # with a sample for each time step.
         no_temporal_combinations = []
         for cmb in multi_temporal_combinations:
-            time_length = len(cmb['dates'])
+            time_length = len(cmb['time'])
             for i in range(time_length):
                 no_temporal_combinations.append(
                     {
@@ -253,16 +209,19 @@ class PASTIS(tdata.Dataset):
         return train_features, test_features, val_features
 
 
-        
-        
-
-
 if __name__ == "__main__":
-    dl = PASTIS(
-        path_to_pastis='/Users/abel/Coding/Capgemini/DSRI-SatClass/data/PASTIS',
+    dl = FastDataLoader(
+        path_to_pastis='/Users/abel/Coding/Capgemini/DSRI-SatClass/src/data/PASTIS',
         data_files='DATA_S2',
         label_files='ANNOTATIONS',
         rgb_only=True, 
         multi_temporal=True,
-        pre_load=True
-        )
+        shuffle=True,
+        batch_size=32,
+    )
+
+    for i, data in enumerate(dl):
+        x, y, t = data
+        print(i, x.shape, y.shape, len(t))
+        if i > 3:
+            break
