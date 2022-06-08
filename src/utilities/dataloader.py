@@ -100,13 +100,14 @@ class PASTIS(tdata.Dataset):
         return len(self.combination)   
         
     def __iter__(self)-> iter:
-        self.counter = 0
+        self.counter = -1
         return self
 
     def __next__(self) -> tuple:
         if self.counter >= len(self):
             raise StopIteration
         else:
+            self.counter += 1
             return self.__getitem__(self.counter)
     
     def __getitem__(self, item):
