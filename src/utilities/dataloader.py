@@ -176,7 +176,7 @@ class PASTIS(tdata.Dataset):
             {
                 'data_path': os.path.join(self.folder, self.data_files, 'S2_{}.npy'.format(f['properties']['ID_PATCH'])),
                 'label_path': os.path.join(self.folder, self.label_files, 'TARGET_{}.npy'.format(f['properties']['ID_PATCH'])),
-                'dates': f['properties']['dates-S2'],
+                'time': f['properties']['dates-S2'],
             }
             for f in features
         ]
@@ -185,7 +185,7 @@ class PASTIS(tdata.Dataset):
         # with a sample for each time step.
         no_temporal_combinations = []
         for cmb in multi_temporal_combinations:
-            time_length = len(cmb['dates'])
+            time_length = len(cmb['time'])
             for i in range(time_length):
                 no_temporal_combinations.append(
                     {
