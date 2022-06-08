@@ -79,7 +79,8 @@ class FastDataLoader:
         batch = [(b,) for b in self.combination[bracket[0]:bracket[1]]]
         
         # Multi-process reading the data
-        with mp.Pool(mp.cpu_count()) as pool:
+        cpu_count = min(self.batch_size, mp.cpu_count())
+        with mp.Pool(cpu_count) as pool:
             completed = pool.starmap(self._read_files, batch)
         
         # Stack and convert to tensor
