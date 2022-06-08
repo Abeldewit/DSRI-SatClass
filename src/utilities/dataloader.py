@@ -134,8 +134,8 @@ class PASTIS(tdata.Dataset):
 
         # Load the data from the file and convert to tensor
         x, y = np.load(x_path), np.load(y_path)
-        # x = torch.from_numpy(x.astype(np.float32))
-        # y = torch.from_numpy(y.astype(np.float32))
+        x = torch.from_numpy(x.astype(np.float32))
+        y = torch.from_numpy(y.astype(np.float32))
 
         # The labels may have more data than just the classes, 
         # so we need to get the correct shape.
