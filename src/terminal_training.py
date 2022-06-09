@@ -1,5 +1,6 @@
 import torch
 import sys, os
+import getopt
 
 sys.path.insert(0, os.getcwd())
 from src.backbones.UNet.unet import UNet
@@ -11,19 +12,45 @@ from src.experiments.model_trainer import train_model
 from src.utilities.dataloader import PASTIS
 del sys.path[0]
 import json
-import random 
+
+
+all_args = sys.argv[1:]
+try:
+    # Gather the arguments
+    opts, args = getopt.getopt(
+        all_args,
+        'b:e:p:', 
+        [
+            'batch_size=', 
+            'epochs=', 
+            'path=',
+        ])
+except:
+    print('Error parsing arguments')
 
 # PARAMETERS
-BATCH_SIZE = 32
-EPOCHS = 10
 learning_rate = 0.01
 SHUFFLE = True
 MODEL_DIR = './models/'
 LOG_DIR = './logs/tensorboard/'
+BATCH_SIZE = None
+EPOCHS = None
+PATH = None
+for opt, arg in opts:
+    if opt in ('-b', '--batch_size'):
+        BATCH_SIZE = int(arg)
+    elif opt in ('-e', '--epochs'):
+        EPOCHS = int(arg)
+    elif opt in ('-p', '--path'):
+        PATH = arg
+
+if BATCH_SIZE is None or EPOCHS is None or PATH is None:
+    print('Error parsing arguments')
+    sys.exit()
 
 # Standard arguments for every experiment
 STD_ARGS = {
-        'path_to_pastis':'src/data/PASTIS', 
+        'path_to_pastis': PATH, 
         'data_files': 'DATA_S2', 
         'label_files':'ANNOTATIONS',
 }
