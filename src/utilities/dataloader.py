@@ -76,7 +76,8 @@ class PASTIS(tdata.Dataset):
         self.metadata = self._read_metadata()
         self.combination = self._create_combination()
 
-        if shuffle:
+        self.shuffle = shuffle
+        if self.shuffle:
             np.random.shuffle(self.combination)
 
         if self.pre_load:
@@ -101,13 +102,15 @@ class PASTIS(tdata.Dataset):
         
     def __iter__(self)-> iter:
         self.counter = -1
+        if self.shuffle:
+            np.random.shuffle(self.combination)
         return self
 
     def __next__(self) -> tuple:
+        self.counter += 1
         if self.counter >= len(self):
             raise StopIteration
         else:
-            self.counter += 1
             return self.__getitem__(self.counter)
     
     def __getitem__(self, item):

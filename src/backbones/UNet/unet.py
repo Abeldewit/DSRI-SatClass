@@ -46,7 +46,6 @@ class decoder_block(nn.Module):
         x = self.conv(x)
         return x
 
-
 class UNet(nn.Module):
     def __init__(self, enc_channels=(3, 64, 128, 256, 512), bottleneck=1024, num_classes=2):
         super().__init__()
