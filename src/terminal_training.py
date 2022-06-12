@@ -127,6 +127,7 @@ for exp, args in list(experiments.items()):
     loss_function = torch.nn.CrossEntropyLoss(label_smoothing=.1)
 
     # Train the model
+    name = model_name + str(list(data_options.values()))
     train_model(
         model=model,
         optimizer=optimizer,
@@ -138,4 +139,5 @@ for exp, args in list(experiments.items()):
         device=device,
         log_dir=None,
         save_dir='./models/',
+        name=name,
     )

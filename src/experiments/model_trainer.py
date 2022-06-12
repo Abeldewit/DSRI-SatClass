@@ -14,6 +14,7 @@ def train_model(
     device, 
     log_dir,
     save_dir,
+    name,
     ):
     """
     Trains the given model for a given number of epochs.
@@ -46,7 +47,14 @@ def train_model(
             validation=True
         )
         print('Epoch {}: train loss: {}, val loss: {}'.format(epoch + 1, avg_loss, val_loss))
-        save_model(model, epoch, optimizer, avg_loss, save_dir)
+        save_model(
+            model,
+            epoch,
+            optimizer,
+            avg_loss,
+            save_dir,
+            name+f"_{epoch}"
+        )
 
 def one_epoch(
     model, 
@@ -67,8 +75,13 @@ def one_epoch(
     # Get the number of batches
     n_batches = len(data_loader) // batch_size + 1
     batch_iterator = batch_maker(data_loader, batch_size, n_batches)
-
-    for i, data in tqdm(enumerate(batch_iterator), total=n_batches, desc='Training epoch'): 
+    
+    description = 'Training epoch' if not validation else 'Validation epoch'
+    for i, data in tqdm(
+        enumerate(batch_iterator),
+        total=n_batches,
+        desc=description
+    ):
         # Get the inputs and labels
         inputs, labels, time = data
         # Move the batch to the device
@@ -150,10 +163,10 @@ def batch_maker(data_set, batch_size, n_batches):
         # Return the batch
         yield inputs, labels, times
 
-def save_model(model, epoch, optimizer, loss, save_dir):
+def save_model(model, epoch, optimizer, loss, save_dir, name):
     torch.save({
             'epoch': epoch,
             'model_state_dict': model.state_dict(),
             'optimizer_state_dict': optimizer.state_dict(),
             'loss': loss,
-            }, save_dir)
+            }, save_dir+'/'+name+'.md5')
