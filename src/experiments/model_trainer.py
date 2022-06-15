@@ -23,7 +23,7 @@ def train_model(
     Trains the given model for a given number of epochs.
     """
     #TODO: Create log writer
-    writer = SummaryWriter(log_dir+'/'+name)
+    writer = SummaryWriter(log_dir+'/'+name, comment='epochs')
 
     # Train the model
     for epoch in tqdm(range(n_epochs), desc='Training'):
@@ -37,7 +37,7 @@ def train_model(
             data_loader=train_loader, 
             batch_size=batch_size,
             device=device,
-            writer=writer,
+            writer=SummaryWriter(log_dir+'/'+name, comment='train_epoch'),
             )
 
         # Run the validation epoch 
@@ -49,11 +49,15 @@ def train_model(
             data_loader=val_loader,
             batch_size=batch_size,
             device=device,
-            writer=writer,
+            writer=SummaryWriter(log_dir+'/'+name, comment='val_epoch'),
             validation=True
         )
         out_string = 'Epoch {}: train loss: {}, val loss: {}'.format(epoch + 1, round(avg_loss, 4), round(val_loss, 4))
         print(out_string)
+
+        writer.add_scalar('Loss/train', avg_loss, epoch+1)
+        writer.add_scalar('Loss/val', val_loss, epoch+1)
+
         if os.environ.get('IFTTT_KEY') is not None:
             data = {
                 'value1': name.split('[')[0],
@@ -104,7 +108,7 @@ def one_epoch(
         # Move the batch to the device
         inputs = inputs.to(device)
         labels = labels.to(device)
-        time = time.to(device)
+        time = time.to(device) if isinstance(time, torch.Tensor) else time
 
         # Clear the gradients
         optimizer.zero_grad()
@@ -136,9 +140,10 @@ def one_epoch(
         if i % batch_size == batch_size -1:
             last_loss = running_loss / batch_size
             #TODO: Training and validation is switched?
-            writer.add_scalar('{} loss'.format('Training' if validation else 'Validation'), last_loss, i+1)
-            if not validation: 
-                print(' \tbatch {} loss: {}'.format(i + 1, last_loss))
+            tag = 'Loss/train' if not validation else 'Loss/val'
+            writer.add_scalar(tag, last_loss, i+1)
+            # if not validation: 
+            #     print(' \tbatch {} loss: {}'.format(i + 1, last_loss))
             running_loss = 0.
         
         # Garbage collection
@@ -176,7 +181,7 @@ def batch_maker(data_set, batch_size, n_batches):
         # Stack the single samples into a batch
         inputs = torch.stack(single_inputs)
         labels = torch.stack(single_labels)
-        times = torch.stack(single_times)
+        times = torch.stack(single_times) if isinstance(single_times[0], torch.Tensor) else single_times
 
         # Garbage collection
         del single_inputs, single_labels, single_times
