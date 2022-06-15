@@ -184,9 +184,15 @@ def batch_maker(data_set, batch_size, n_batches):
         yield inputs, labels, times
 
 def save_model(model, epoch, optimizer, loss, save_dir, name):
+
+    model_name = name.split('[')[0]
+    if not os.path.exists(os.path.join(save_dir, model_name)):
+        os.makedirs(os.path.join(save_dir, model_name))
+
+    path = os.path.join(save_dir, model_name, name) + '.md5'
     torch.save({
             'epoch': epoch,
             'model_state_dict': model.state_dict(),
             'optimizer_state_dict': optimizer.state_dict(),
             'loss': loss,
-            }, save_dir+'/'+name+'.md5')
+            }, path)
