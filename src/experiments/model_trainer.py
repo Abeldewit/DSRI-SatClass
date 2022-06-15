@@ -82,7 +82,9 @@ def one_epoch(
     running_loss = 0.
 
     # Get the number of batches
-    n_batches = len(data_loader) // batch_size + 1
+    n_batches = len(data_loader) // batch_size
+    if len(data_loader) % batch_size != 0:
+        n_batches += 1
     batch_iterator = batch_maker(data_loader, batch_size, n_batches)
     
     description = 'Training epoch' if not validation else 'Validation epoch'

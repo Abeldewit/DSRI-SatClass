@@ -116,6 +116,8 @@ for exp, args in list(experiments.items()):
     val_loader = PASTIS(**STD_ARGS, **data_options, shuffle=True, subset_type='val')
     test_loader = PASTIS(**STD_ARGS, **data_options, shuffle=True, subset_type='test')
 
+    print(len(train_loader), len(val_loader), len(train_loader)//batch_size, len(val_loader)//batch_size)
+
     # Creating the model
     if model_name != 'ViT':  # Vit needs some special attention
         model_options = {}
