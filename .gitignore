@@ -2,7 +2,7 @@ src/data/*
 .venv/
 *checkpoint*
 *__pycache__*
-model_*
 runs/*
 *.DS_Store
 .vscode/*
+*.md5

@@ -4,6 +4,8 @@ import os
 from pyifttt.webhook import send_notification
 from src.backbones.UTAE.utae import UTAE
 
+from torch.utils.tensorboard import SummaryWriter
+
 def train_model(
     model, 
     optimizer, 
@@ -21,6 +23,7 @@ def train_model(
     Trains the given model for a given number of epochs.
     """
     #TODO: Create log writer
+    writer = SummaryWriter(log_dir+'/'+name)
 
     # Train the model
     for epoch in tqdm(range(n_epochs), desc='Training'):
@@ -32,8 +35,9 @@ def train_model(
             optimizer=optimizer, 
             loss_function=loss_function, 
             data_loader=train_loader, 
-            batch_size=batch_size, 
-            device=device
+            batch_size=batch_size,
+            device=device,
+            writer=writer,
             )
 
         # Run the validation epoch 
@@ -45,6 +49,7 @@ def train_model(
             data_loader=val_loader,
             batch_size=batch_size,
             device=device,
+            writer=writer,
             validation=True
         )
         out_string = 'Epoch {}: train loss: {}, val loss: {}'.format(epoch + 1, avg_loss, val_loss)
@@ -72,6 +77,7 @@ def one_epoch(
     data_loader, 
     batch_size,
     device,
+    writer,
     validation=False
     ):
     """
@@ -130,6 +136,7 @@ def one_epoch(
         if i % batch_size == batch_size -1:
             last_loss = running_loss / batch_size
             #TODO: Log the loss
+            writer.add_scalar('{} loss'.format('Training' if not validation else 'Validation'), last_loss, i+1)
             if not validation: 
                 print(' \tbatch {} loss: {}'.format(i + 1, last_loss))
             running_loss = 0.
