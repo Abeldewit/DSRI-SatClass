@@ -56,7 +56,7 @@ def train_model(
         print(out_string)
         if os.environ.get('IFTTT_KEY') is not None:
             data = {
-                'value1': str(model),
+                'value1': name.split('[')[0],
                 'value2': out_string
             }
             send_notification('python_notification', data=data)
