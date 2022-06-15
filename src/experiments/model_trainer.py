@@ -96,6 +96,7 @@ def one_epoch(
         # Move the batch to the device
         inputs = inputs.to(device)
         labels = labels.to(device)
+        time = time.to(device)
 
         # Clear the gradients
         optimizer.zero_grad()
@@ -132,7 +133,7 @@ def one_epoch(
             running_loss = 0.
         
         # Garbage collection
-        del inputs, labels, outputs, loss
+        del inputs, labels, time, outputs, loss
         if device.type == 'cuda':
             torch.cuda.empty_cache()
 
