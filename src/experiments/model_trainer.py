@@ -52,7 +52,7 @@ def train_model(
             writer=writer,
             validation=True
         )
-        out_string = 'Epoch {}: train loss: {}, val loss: {}'.format(epoch + 1, avg_loss, val_loss)
+        out_string = 'Epoch {}: train loss: {}, val loss: {}'.format(epoch + 1, round(avg_loss, 4), round(val_loss, 4))
         print(out_string)
         if os.environ.get('IFTTT_KEY') is not None:
             data = {
