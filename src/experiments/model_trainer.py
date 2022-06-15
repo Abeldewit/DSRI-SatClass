@@ -1,6 +1,7 @@
 import torch
 from tqdm import tqdm
-
+import os
+from pyifttt.webhook import send_notification
 from src.backbones.UTAE.utae import UTAE
 
 def train_model(
@@ -46,7 +47,15 @@ def train_model(
             device=device,
             validation=True
         )
-        print('Epoch {}: train loss: {}, val loss: {}'.format(epoch + 1, avg_loss, val_loss))
+        out_string = 'Epoch {}: train loss: {}, val loss: {}'.format(epoch + 1, avg_loss, val_loss)
+        print(out_string)
+        if os.environ.get('IFTTT_KEY') is not None:
+            data = {
+                'value1': str(model),
+                'value2': out_string
+            }
+            send_notification('python_notification', data=data)
+
         save_model(
             model,
             epoch,
@@ -142,7 +151,7 @@ def batch_maker(data_set, batch_size, n_batches):
         # Create a list to hold the samples in the batch
         single_inputs = []
         single_labels = []
-        times = []
+        single_times = []
         # Get the next batch
         for _ in range(batch_size):
             try:
@@ -152,14 +161,15 @@ def batch_maker(data_set, batch_size, n_batches):
             # Add the sample to the batch
             single_inputs.append(single_input)
             single_labels.append(single_label)
-            times.append(single_time)
+            single_times.append(single_time)
         
         # Stack the single samples into a batch
         inputs = torch.stack(single_inputs)
         labels = torch.stack(single_labels)
+        times = torch.stack(single_times)
 
         # Garbage collection
-        del single_inputs, single_labels
+        del single_inputs, single_labels, single_times
         # Return the batch
         yield inputs, labels, times
 

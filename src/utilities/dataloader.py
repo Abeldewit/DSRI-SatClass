@@ -156,7 +156,9 @@ class PASTIS(tdata.Dataset):
         if self.multi_temporal:
             padlen = self.max_t - x.shape[0]
             x = np.pad(x, ((0, padlen), (0, 0), (0, 0), (0, 0)), 'constant')
+            x = torch.from_numpy(x.astype(np.float32))
             time = np.pad(time, (0, self.max_t - len(time)), 'constant').flatten()
+            time = torch.from_numpy(time.astype(np.float32))
 
         elif not self.multi_temporal:
             x = x[time, :, :, :]

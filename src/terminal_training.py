@@ -12,7 +12,7 @@ from src.experiments.model_trainer import train_model
 from src.utilities.dataloader import PASTIS
 del sys.path[0]
 import json
-
+from pyifttt.webhook import send_notification
 
 all_args = sys.argv[1:]
 try:
@@ -24,6 +24,9 @@ try:
             'batch_size=', 
             'epochs=', 
             'path=',
+            'start=',
+            'end=',
+            'key='
         ])
 except:
     print('Error parsing arguments')
@@ -36,6 +39,9 @@ LOG_DIR = './logs/tensorboard/'
 BATCH_SIZE = None
 EPOCHS = None
 PATH = None
+START = None
+END = None
+KEY = None
 for opt, arg in opts:
     if opt in ('-b', '--batch_size'):
         BATCH_SIZE = int(arg)
@@ -43,6 +49,13 @@ for opt, arg in opts:
         EPOCHS = int(arg)
     elif opt in ('-p', '--path'):
         PATH = arg
+    elif opt in ('--start',):
+        START = int(arg)
+    elif opt in ('--end',):
+        END = int(arg)
+    elif opt in ('--key',):
+        os.environ['IFTTT_KEY'] = arg
+        send_notification('python_notification', data={'value1': 'Started training'})
 
 if BATCH_SIZE is None or EPOCHS is None or PATH is None:
     print('Error parsing arguments')
@@ -65,6 +78,12 @@ if not os.path.exists(LOG_DIR):
 # Read in the experiments
 with open(os.path.join(os.getcwd(), 'src/experiments/experiments.json'), 'r') as f:
     experiments = json.load(f)
+
+# Set the start and end if given
+if START is not None:
+    experiments = dict(list(experiments.items())[START:])
+if END is not None:
+    experiments = dict(list(experiments.items())[:END])
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -128,6 +147,7 @@ for exp, args in list(experiments.items()):
 
     # Train the model
     name = model_name + str(list(data_options.values()))
+
     train_model(
         model=model,
         optimizer=optimizer,

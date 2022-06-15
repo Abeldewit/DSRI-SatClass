@@ -1,7 +1,14 @@
-ipykernel==6.13.0
+black==22.3.0
+einops==0.4.1
 matplotlib==3.5.2
+notebook==6.4.11
+pip-chill==1.0.1
 pipe==1.6.0
+pyifttt==0.1.4
+pylint==2.13.9
+pytorch-ignite==0.4.9
 sklearn==0.0
 tensorboard-plugin-profile==2.8.0
+timm==0.5.4
 torch-tb-profiler==0.4.0
-torchvision==0.12.0
+tqdm==4.64.0
