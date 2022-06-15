@@ -135,8 +135,8 @@ def one_epoch(
         avg_loss += loss.item()
         if i % batch_size == batch_size -1:
             last_loss = running_loss / batch_size
-            #TODO: Log the loss
-            writer.add_scalar('{} loss'.format('Training' if not validation else 'Validation'), last_loss, i+1)
+            #TODO: Training and validation is switched?
+            writer.add_scalar('{} loss'.format('Training' if validation else 'Validation'), last_loss, i+1)
             if not validation: 
                 print(' \tbatch {} loss: {}'.format(i + 1, last_loss))
             running_loss = 0.
