@@ -16,6 +16,12 @@ data_options = {
     'spec_no_temp': {'rgb_only': False, 'multi_temporal': False},
 }
 
+batch_size_options = {
+    'UNet': 64,
+    'UTAE': 8,
+    'ViT': 64,
+}
+
 standard_model_options = {
     'UNet': {
         'num_classes': 20
@@ -102,12 +108,15 @@ combinations = [(*c, special_model_options[c[0]][c[1]]) for c in combinations]
 # Set data options
 combinations = [(c[0], *data_options[c[1]].values(), *c[2:]) for c in combinations]
 
+combinations = [(*c[:3], batch_size_options[c[0]], *c[3:]) for c in combinations]
+
 
 # # All arguments
 keys = [
     'model',
     'rgb_only',
     'multi_temporal',
+    'batch_size',
     'fold',
     'standard_arguments',
     'special_arguments',

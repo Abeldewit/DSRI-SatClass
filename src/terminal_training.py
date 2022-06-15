@@ -19,9 +19,8 @@ try:
     # Gather the arguments
     opts, args = getopt.getopt(
         all_args,
-        'b:e:p:', 
+        'e:p:', 
         [
-            'batch_size=', 
             'epochs=', 
             'path=',
             'start=',
@@ -36,16 +35,13 @@ learning_rate = 0.01
 SHUFFLE = True
 MODEL_DIR = './models/'
 LOG_DIR = './logs/tensorboard/'
-BATCH_SIZE = None
 EPOCHS = None
 PATH = None
 START = None
 END = None
 KEY = None
 for opt, arg in opts:
-    if opt in ('-b', '--batch_size'):
-        BATCH_SIZE = int(arg)
-    elif opt in ('-e', '--epochs'):
+    if opt in ('-e', '--epochs'):
         EPOCHS = int(arg)
     elif opt in ('-p', '--path'):
         PATH = arg
@@ -57,7 +53,7 @@ for opt, arg in opts:
         os.environ['IFTTT_KEY'] = arg
         send_notification('python_notification', data={'value1': 'Started training'})
 
-if BATCH_SIZE is None or EPOCHS is None or PATH is None:
+if EPOCHS is None or PATH is None:
     print('Error parsing arguments')
     sys.exit()
 
@@ -103,6 +99,7 @@ for exp, args in list(experiments.items()):
     print('-'*27)
     # Get the arguments
     model_name = args['model']
+    batch_size = args['batch_size']
     print(f'Model: {model_name}')
 
     data_options = {
@@ -153,7 +150,7 @@ for exp, args in list(experiments.items()):
         optimizer=optimizer,
         loss_function=loss_function,
         n_epochs=EPOCHS,
-        batch_size=BATCH_SIZE,
+        batch_size=batch_size,
         train_loader=train_loader,
         val_loader=val_loader,
         device=device,
