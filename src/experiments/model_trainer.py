@@ -102,7 +102,8 @@ def train_model(
                 'Recall': rec.compute().item(),
                 'F1 Score': f1.compute().item(),
                 'Jaccard Index': jaccard.compute().item(),
-            }
+            },
+            epoch_number + 1
         )
         writer.flush()
 
