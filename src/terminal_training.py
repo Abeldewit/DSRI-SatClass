@@ -58,7 +58,7 @@ for opt, arg in opts:
         os.environ['IFTTT_KEY'] = arg
         try:
             send_notification('python_notification', data={'value1': 'Started training'})
-        except:
+        except Exception as e:
             print('Error sending notification')
 
 if EPOCHS is None or PATH is None:
