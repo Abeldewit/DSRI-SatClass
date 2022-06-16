@@ -26,7 +26,8 @@ try:
             'path=',
             'start=',
             'end=',
-            'key='
+            'key=',
+            'num_workers=',
         ])
 except:
     print('Error parsing arguments')
@@ -40,6 +41,7 @@ EPOCHS = None
 PATH = None
 START = None
 END = None
+NUMWORK = None
 KEY = None
 for opt, arg in opts:
     if opt in ('-e', '--epochs'):
@@ -50,6 +52,8 @@ for opt, arg in opts:
         START = int(arg)
     elif opt in ('--end',):
         END = int(arg)
+    elif opt in ('--num_workers',):
+        NUMWORK = int(arg)
     elif opt in ('--key',):
         os.environ['IFTTT_KEY'] = arg
         send_notification('python_notification', data={'value1': 'Started training'})
@@ -120,18 +124,18 @@ for exp, args in list(experiments.items()):
         dataset=train_set,
         batch_size=batch_size,
         shuffle=SHUFFLE,
-        num_workers=4,
+        num_workers=NUMWORK,
         pin_memory=True,
-        prefetch_factor=2,
+        prefetch_factor=NUMWORK,
     )
 
     val_loader = DataLoader(
         dataset=val_set,
         batch_size=batch_size,
         shuffle=False,
-        num_workers=4,
+        num_workers=NUMWORK,
         pin_memory=True,
-        prefetch_factor=2,
+        prefetch_factor=NUMWORK,
     )
 
     # Creating the model
