@@ -49,7 +49,7 @@ for opt, arg in opts:
     elif opt in ('-p', '--path'):
         PATH = arg
     elif opt in ('--start',):
-        START = int(arg)
+        START = int(arg) + 1
     elif opt in ('--end',):
         END = int(arg)
     elif opt in ('--num_workers',):
@@ -81,9 +81,11 @@ with open(os.path.join(os.getcwd(), 'src/experiments/experiments.json'), 'r') as
     experiments = json.load(f)
 
 # Set the start and end if given
-if START is not None:
+if START is not None and END is not None:
+    experiments = dict(list(experiments.items())[START:END])
+elif START is not None:
     experiments = dict(list(experiments.items())[START:])
-if END is not None:
+elif END is not None:
     experiments = dict(list(experiments.items())[:END])
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
