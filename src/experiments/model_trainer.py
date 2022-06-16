@@ -1,5 +1,6 @@
 import torch
 from tqdm import tqdm
+import torchvision
 import os
 from pyifttt.webhook import send_notification
 from src.backbones.UTAE.utae import UTAE
@@ -27,6 +28,23 @@ def train_model(
     # Initialize the log writer
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     writer = SummaryWriter(f'{log_dir}/{name}_{timestamp}')
+
+    # Get model graph
+    rgb = name.split('[')[1].split(']')[0].split(',')[0]
+    temp = name.split('[')[1].split(']')[0].split(',')[1]
+    fake_input = None
+    if rgb == 'True':
+        if temp == 'True':
+            fake_input = torch.randn((1, 61, 3, 128, 128))
+        else:
+            fake_input = torch.randn((1, 3, 128, 128))
+    else:
+        if temp == 'True':
+            fake_input = torch.randn((1, 61, 10, 128, 128))
+        else:
+            fake_input = torch.randn((1, 10, 128, 128))
+    writer.add_graph(model, fake_input)
+    writer.flush()
 
     # Training regularization
     early_stopping = EarlyStopping(patience=5, min_delta=0.005)
@@ -99,21 +117,17 @@ def train_model(
             }
         )
         writer.add_scalars(
-            'Training vs. Validation Loss',
+            'Loss',
             { 'Training': avg_loss, 'Validation': avg_vloss },
             epoch_number + 1
             )
-        writer.add_scalars(
-            'Metrics',
-            {
-                'Accuracy': acc.compute().item(),
-                'Precision': prec.compute().item(),
-                'Recall': rec.compute().item(),
-                'F1 Score': f1.compute().item(),
-                'Jaccard Index': jaccard.compute().item(),
-            },
-            epoch_number + 1
-        )
+
+        writer.add_scalar('Metrics/Accuracy', acc.compute().item(), epoch_number + 1)
+        writer.add_scalar('Metrics/Jaccard Index', jaccard.compute().item(), epoch_number + 1)
+        writer.add_scalar('Metrics/Precision', prec.compute().item(), epoch_number + 1)
+        writer.add_scalar('Metrics/Recall', rec.compute().item(), epoch_number + 1)
+        writer.add_scalar('Metrics/F1', f1.compute().item(), epoch_number + 1)
+
         writer.flush()
 
         # Track best performance, and save the model's state
@@ -186,7 +200,7 @@ def save_model(model, epoch, optimizer, loss, save_dir, name):
     if not os.path.exists(os.path.join(save_dir, model_name)):
         os.makedirs(os.path.join(save_dir, model_name))
 
-    path = os.path.join(save_dir, model_name, name) + '.md5'
+    path = os.path.join(save_dir, model_name, name+f'_e{epoch}') + '.md5'
     torch.save({
             'epoch': epoch,
             'model_state_dict': model.state_dict(),
