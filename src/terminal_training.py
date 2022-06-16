@@ -13,6 +13,7 @@ from src.utilities.dataloader import PASTIS
 del sys.path[0]
 import json
 from pyifttt.webhook import send_notification
+from torch.utils.data import DataLoader
 
 all_args = sys.argv[1:]
 try:
@@ -111,10 +112,27 @@ for exp, args in list(experiments.items()):
     print('Options:\n  {}'.format('\n  '.join(['{}: {}'.format(k, v) for k, v in data_options.items()])))
     print('-'*27)
 
-    # Create the dataloaders
-    train_loader = PASTIS(**STD_ARGS, **data_options, shuffle=True, subset_type='train')
-    val_loader = PASTIS(**STD_ARGS, **data_options, shuffle=True, subset_type='val')
-    test_loader = PASTIS(**STD_ARGS, **data_options, shuffle=True, subset_type='test')
+    # Create the datasets
+    train_set = PASTIS(**STD_ARGS, **data_options, shuffle=True, subset_type='train')
+    val_set = PASTIS(**STD_ARGS, **data_options, shuffle=True, subset_type='val')
+
+    train_loader = DataLoader(
+        data_set=train_set,
+        batch_size=batch_size,
+        shuffle=SHUFFLE,
+        num_workers=4,
+        pin_memory=True,
+        prefetch_factor=2,
+    )
+
+    val_loader = DataLoader(
+        data_set=val_set,
+        batch_size=batch_size,
+        shuffle=False,
+        num_workers=4,
+        pin_memory=True,
+        prefetch_factor=2,
+    )
 
     # Creating the model
     if model_name != 'ViT':  # Vit needs some special attention
@@ -135,6 +153,7 @@ for exp, args in list(experiments.items()):
             **segmenter_options
         )
 
+    # Move the model to the GPU
     model.to(device)
 
     # Create the optimizer
