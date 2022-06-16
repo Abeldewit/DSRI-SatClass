@@ -111,11 +111,15 @@ def train_model(
         
         # Report the loss
         avg_vloss = running_vloss / (i + 1)
-        send_notification('python_notification', data={
-            'value1': f'Train loss: {avg_loss:.4f}', 
-            'value2': f'Val loss: {avg_vloss:.4f}'
-            }
-        )
+        try:
+            send_notification('python_notification', data={
+                'value1': f'Train loss: {avg_loss:.4f}', 
+                'value2': f'Val loss: {avg_vloss:.4f}'
+                }
+            )
+        except Exception as e:
+            print("Could not send notification:", e)
+            
         writer.add_scalars(
             'Loss',
             { 'Training': avg_loss, 'Validation': avg_vloss },

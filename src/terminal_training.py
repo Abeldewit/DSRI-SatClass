@@ -56,7 +56,10 @@ for opt, arg in opts:
         NUMWORK = int(arg)
     elif opt in ('--key',):
         os.environ['IFTTT_KEY'] = arg
-        send_notification('python_notification', data={'value1': 'Started training'})
+        try:
+            send_notification('python_notification', data={'value1': 'Started training'})
+        except:
+            print('Error sending notification')
 
 if EPOCHS is None or PATH is None:
     print('Error parsing arguments')
