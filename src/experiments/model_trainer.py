@@ -43,7 +43,7 @@ def train_model(
             fake_input = torch.randn((1, 61, 10, 128, 128))
         else:
             fake_input = torch.randn((1, 10, 128, 128))
-    writer.add_graph(model, fake_input)
+    writer.add_graph(model, fake_input.to(device))
     writer.flush()
 
     # Training regularization
