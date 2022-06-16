@@ -126,7 +126,7 @@ for exp, args in list(experiments.items()):
         shuffle=SHUFFLE,
         num_workers=NUMWORK,
         pin_memory=True,
-        prefetch_factor=NUMWORK,
+        prefetch_factor=2,
     )
 
     val_loader = DataLoader(
@@ -135,7 +135,7 @@ for exp, args in list(experiments.items()):
         shuffle=False,
         num_workers=NUMWORK,
         pin_memory=True,
-        prefetch_factor=NUMWORK,
+        prefetch_factor=2,
     )
 
     # Creating the model
