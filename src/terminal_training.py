@@ -49,7 +49,7 @@ for opt, arg in opts:
     elif opt in ('-p', '--path'):
         PATH = arg
     elif opt in ('--start',):
-        START = int(arg) + 1
+        START = max(int(arg) - 1, 0)
     elif opt in ('--end',):
         END = int(arg)
     elif opt in ('--num_workers',):
