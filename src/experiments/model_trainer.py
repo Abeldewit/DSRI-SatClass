@@ -32,11 +32,11 @@ def train_model(
     best_vloss = float('inf')
     for epoch_number in tqdm(range(n_epochs), desc='Total Training: '):
         # Initialize the metrics
-        acc = Accuracy(num_classes=20, mdmc_average='global')
-        prec = Precision(num_classes=20, mdmc_average='global')
-        rec = Recall(num_classes=20, mdmc_average='global')
-        f1 = F1Score(num_classes=20, mdmc_average='global')
-        jaccard = JaccardIndex(num_classes=20)
+        acc = Accuracy(num_classes=20, mdmc_average='global').to(device)
+        prec = Precision(num_classes=20, mdmc_average='global').to(device)
+        rec = Recall(num_classes=20, mdmc_average='global').to(device)
+        f1 = F1Score(num_classes=20, mdmc_average='global').to(device)
+        jaccard = JaccardIndex(num_classes=20).to(device)
         
         # Make sure gradient tracking is on, and do a pass over the data
         model.train()
