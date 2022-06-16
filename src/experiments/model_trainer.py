@@ -77,6 +77,7 @@ def train_model(
             # Compute the loss and its gradients
             vloss = loss_function(voutputs, vlabels.long())
             running_vloss += vloss.item()
+            
 
             # Compute the metrics
             acc(vprediction, vlabels.long())
@@ -86,7 +87,7 @@ def train_model(
             jaccard(vprediction, vlabels.long())
 
             # Garbage collection
-            del vinputs, vlabels, vtimes, voutputs, vprediction
+            del vinputs, vlabels, vtimes, voutputs, vprediction, vloss
             if device.type == 'cuda':
                 torch.cuda.empty_cache()
         
@@ -97,7 +98,6 @@ def train_model(
             'value2': f'Val loss: {avg_vloss:.4f}'
             }
         )
-
         writer.add_scalars(
             'Training vs. Validation Loss',
             { 'Training': avg_loss, 'Validation': avg_vloss },
@@ -121,19 +121,14 @@ def train_model(
             best_vloss = avg_vloss
             save_model(model, epoch_number, optimizer, avg_loss, save_dir, name)
 
-        # Learning rate scheduler
-        scheduler.step(vloss)
 
-        # Check for early stopping
-        early_stopping(avg_loss, vloss)
+        # Learning rate scheduler
+        scheduler.step(avg_vloss)
+        # Early stopping
+        early_stopping(avg_loss, avg_vloss)
         if early_stopping.early_stop:
             print('Early stopping')
             break
-
-        # Garbage collection
-        del vloss
-        if device.type == 'cuda':
-            torch.cuda.empty_cache()
         
 def train_one_epoch(optimizer, loss_function, model, data_loader, batch_size, device, epoch_index, tb_writer):
     running_loss = 0.
