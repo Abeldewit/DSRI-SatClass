@@ -29,23 +29,6 @@ def train_model(
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     writer = SummaryWriter(f'{log_dir}/{name}_{timestamp}')
 
-    # Get model graph
-    rgb = name.split('[')[1].split(']')[0].split(',')[0]
-    temp = name.split('[')[1].split(']')[0].split(',')[1]
-    fake_input = None
-    if rgb == 'True':
-        if temp == 'True':
-            fake_input = torch.randn((1, 61, 3, 128, 128))
-        else:
-            fake_input = torch.randn((1, 3, 128, 128))
-    else:
-        if temp == 'True':
-            fake_input = torch.randn((1, 61, 10, 128, 128))
-        else:
-            fake_input = torch.randn((1, 10, 128, 128))
-    writer.add_graph(model, fake_input.to(device))
-    writer.flush()
-
     # Training regularization
     early_stopping = EarlyStopping(patience=5, min_delta=0.005)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
@@ -119,7 +102,7 @@ def train_model(
             )
         except Exception as e:
             print("Could not send notification:", e)
-            
+
         writer.add_scalars(
             'Loss',
             { 'Training': avg_loss, 'Validation': avg_vloss },
