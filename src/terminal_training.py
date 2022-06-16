@@ -117,7 +117,7 @@ for exp, args in list(experiments.items()):
     val_set = PASTIS(**STD_ARGS, **data_options, shuffle=True, subset_type='val')
 
     train_loader = DataLoader(
-        data_set=train_set,
+        dataset=train_set,
         batch_size=batch_size,
         shuffle=SHUFFLE,
         num_workers=4,
@@ -126,7 +126,7 @@ for exp, args in list(experiments.items()):
     )
 
     val_loader = DataLoader(
-        data_set=val_set,
+        dataset=val_set,
         batch_size=batch_size,
         shuffle=False,
         num_workers=4,
