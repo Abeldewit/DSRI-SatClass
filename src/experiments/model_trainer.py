@@ -30,7 +30,7 @@ def train_model(
 
     # Train the model
     best_vloss = float('inf')
-    for epoch_number in range(n_epochs):
+    for epoch_number in tqdm(range(n_epochs), desc='Total Training: '):
         # Initialize the metrics
         acc = Accuracy(num_classes=20)
         prec = Precision(num_classes=20)
@@ -55,7 +55,7 @@ def train_model(
         model.eval()
 
         running_vloss = 0.
-        for i, vdata in enumerate(val_loader):
+        for i, vdata in tqdm(enumerate(val_loader), total=len(val_loader), desc='Validating: '):
             vinputs, vlabels, vtimes = vdata
             vinputs = vinputs.to(device)
             vlabels = vlabels.to(device)
@@ -83,6 +83,11 @@ def train_model(
         
         # Report the loss
         avg_vloss = running_vloss / (i + 1)
+        send_notification('python_notification', data={
+            'value1': f'Train loss: {avg_loss:.4f}', 
+            'value2': f'Val loss: {avg_vloss:.4f}'
+            }
+        )
 
         writer.add_scalars(
             'Training vs. Validation Loss',
@@ -110,7 +115,7 @@ def train_one_epoch(optimizer, loss_function, model, data_loader, batch_size, de
     running_loss = 0.
     last_loss = 0.
 
-    for i, data in enumerate(data_loader):
+    for i, data in tqdm(enumerate(data_loader), total=len(data_loader), desc='Training epoch:'):
         inputs, labels, times = data
         inputs = inputs.to(device)
         labels = labels.to(device)
