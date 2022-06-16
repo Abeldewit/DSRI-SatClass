@@ -28,6 +28,15 @@ def train_model(
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     writer = SummaryWriter(f'{log_dir}/{name}_{timestamp}')
 
+    # Training regularization
+    early_stopping = EarlyStopping(patience=5, min_delta=0.005)
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+        optimizer=optimizer,
+        mode='min',
+        factor=0.1,
+        patience=5,
+    )
+
     # Train the model
     best_vloss = float('inf')
     for epoch_number in tqdm(range(n_epochs), desc='Total Training: '):
@@ -75,11 +84,6 @@ def train_model(
             rec(vprediction, vlabels.long())
             f1(vprediction, vlabels.long())
             jaccard(vprediction, vlabels.long())
-
-            # Garbage collection
-            del vinputs, vlabels, vtimes, voutputs, vprediction, vloss
-            if device.type == 'cuda':
-                torch.cuda.empty_cache()
         
         # Report the loss
         avg_vloss = running_vloss / (i + 1)
@@ -111,6 +115,20 @@ def train_model(
         if avg_vloss < best_vloss:
             best_vloss = avg_vloss
             save_model(model, epoch_number, optimizer, avg_loss, save_dir, name)
+
+        # Learning rate scheduler
+        scheduler.step(vloss)
+
+        # Check for early stopping
+        early_stopping(avg_loss, vloss)
+        if early_stopping.early_stop:
+            print('Early stopping')
+            break
+
+        # Garbage collection
+        del vinputs, vlabels, vtimes, voutputs, vprediction, vloss
+        if device.type == 'cuda':
+            torch.cuda.empty_cache()
         
 def train_one_epoch(optimizer, loss_function, model, data_loader, batch_size, device, epoch_index, tb_writer):
     running_loss = 0.
@@ -149,6 +167,18 @@ def train_one_epoch(optimizer, loss_function, model, data_loader, batch_size, de
             torch.cuda.empty_cache()
     
     return last_loss
+
+class EarlyStopping():
+    def __init__(self, patience=5, min_delta=0):
+        self.patience = patience
+        self.min_delta = min_delta
+        self.counter = 0
+        self.early_stop = False
+
+    def __call__(self, train_loss, validation_loss):
+        if (validation_loss - train_loss) > self.min_delta:
+            if self.counter >= self.patience:
+                self.early_stop = True
 
 def save_model(model, epoch, optimizer, loss, save_dir, name):
 
