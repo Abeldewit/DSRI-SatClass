@@ -84,6 +84,11 @@ def train_model(
             rec(vprediction, vlabels.long())
             f1(vprediction, vlabels.long())
             jaccard(vprediction, vlabels.long())
+
+            # Garbage collection
+            del vinputs, vlabels, vtimes, voutputs, vprediction
+            if device.type == 'cuda':
+                torch.cuda.empty_cache()
         
         # Report the loss
         avg_vloss = running_vloss / (i + 1)
@@ -126,7 +131,7 @@ def train_model(
             break
 
         # Garbage collection
-        del vinputs, vlabels, vtimes, voutputs, vprediction, vloss
+        del vloss
         if device.type == 'cuda':
             torch.cuda.empty_cache()
         
