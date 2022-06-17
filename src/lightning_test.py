@@ -82,8 +82,8 @@ class LiTUNet(pl.LightningModule):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=3, verbose=True)
 
-        return [optimizer], [scheduler]
-
+        return [optimizer], [{"scheduler": scheduler, "interval": "epoch", "monitor": "val_loss"}]
+    
     def training_step(self, train_batch, batch_idx):
         inputs, labels, times = train_batch
         outputs = self.model(inputs) if not isinstance(self.model, UTAE) else self.model(inputs, times)
