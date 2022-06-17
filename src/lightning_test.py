@@ -108,7 +108,7 @@ class LiTUNet(pl.LightningModule):
 
 
 if __name__ == "__main__":
-    model = LiTUNet()
+    model = LiTUNet(batch_size=64)
 
     trainer = None
     if torch.cuda.is_available():
@@ -117,7 +117,7 @@ if __name__ == "__main__":
             devices=1, 
             max_epochs=50, 
             auto_lr_find=True,
-            auto_scale_batch_size=True,
+            # auto_scale_batch_size=True,
             auto_select_gpus=True,
         )
     else:
@@ -125,13 +125,4 @@ if __name__ == "__main__":
     # call tune to find the lr
     trainer.tune(model)
 
-    
-    train, val, test = create_split_dataloaders(
-        **standard_args, 
-        **test_args[0], 
-        shuffle=True, 
-        batch_size=model.batch_size,
-        num_workers=6
-    )
-
-    trainer.fit(model, train, val)
+    trainer.fit(model)
