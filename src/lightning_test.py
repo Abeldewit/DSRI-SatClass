@@ -13,15 +13,17 @@ from src.utilities.dataloader import create_split_dataloaders, PASTIS
 del sys.path[0]
 
 from torch.utils.data import DataLoader
+from torchmetrics.classification import Accuracy, Precision, Recall, F1Score, JaccardIndex
 
 class LiTUNet(pl.LightningModule):
     def __init__(
-        self, 
-        batch_size = 4,
-        learning_rate = 0.017378008287493765,
+        self,
+        num_workers=4,
+        batch_size=4,
+        learning_rate=0.005,
     ):
         super().__init__()
-        self.model = UNet(num_classes=20)
+        self.num_workers = num_workers
         self.learning_rate = learning_rate
         self.batch_size = batch_size
         self.loss_fn = torch.nn.CrossEntropyLoss(label_smoothing=.1)
@@ -34,11 +36,22 @@ class LiTUNet(pl.LightningModule):
 
         self.test_args = [
             {
-                'rgb_only': True, 
+                'rgb_only': False,
                 'multi_temporal': False,
                 'fold': 1,
             },
         ]
+        
+        self.precision = Precision(num_classes=20, average='macro', mdmc_average='samplewise').to(device)
+        self.recall = Recall(num_classes=20, average='macro', mdmc_average='samplewise').to(device)
+        self.accuracy = Accuracy(num_classes=20, average='weighted', mdmc_average='samplewise').to(device)
+        self.f1 = F1Score(num_classes=20, average='macro', mdmc_average='samplewise').to(device)
+        self.jaccard = JaccardIndex(num_classes=20, average='weighted', mdmc_average='samplewise').to(device)
+        
+        self.model = UNet(
+            enc_channels=(10, 64, 128, 256, 512),
+            num_classes=20
+        )
 
     def forward(self, x):
         skips = []
@@ -80,27 +93,58 @@ class LiTUNet(pl.LightningModule):
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
-        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=10, verbose=True)
+        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+            optimizer,
+            mode='min',
+            factor=0.1,
+            patience=10,
+            verbose=True
+        )
+
+        lr_scheduler_config = {
+            # REQUIRED: The scheduler instance
+            "scheduler": scheduler,
+            # The unit of the scheduler's step size, could also be 'step'.
+            # 'epoch' updates the scheduler on epoch end whereas 'step'
+            # updates it after a optimizer update.
+            "interval": "epoch",
+            # How many epochs/steps should pass between calls to
+            # `scheduler.step()`. 1 corresponds to updating the learning
+            # rate after every epoch/step.
+            # "interval": "epoch",
+            # Metric to to monitor for schedulers like `ReduceLROnPlateau`
+            "monitor": "val_loss",
+            # If set to `True`, will enforce that the value specified 'monitor'
+            # is available when the scheduler is updated, thus stopping
+            # training if not found. If set to `False`, it will only produce a warning
+            "strict": True,
+            # If using the `LearningRateMonitor` callback to monitor the
+            # learning rate progress, this keyword can be used to specify
+            # a custom logged name
+            "name": None,
+        }
 
         return {
             'optimizer': optimizer,
-            "lr_scheduler": scheduler, 
-            "interval": "epoch", 
-            "monitor": "val_loss",
+            "lr_scheduler": lr_scheduler_config,
         }
     
     def training_step(self, train_batch, batch_idx):
         inputs, labels, times = train_batch
         outputs = self.model(inputs) if not isinstance(self.model, UTAE) else self.model(inputs, times)
         loss = self.loss_fn(outputs, labels.long())
+
         self.log('train_loss', loss, prog_bar=True)
         return loss
+    
+    def 
 
     def validation_step(self, val_batch, batch_idx):
         inputs, labels, times = val_batch
         outputs = self.model(inputs) if not isinstance(self.model, UTAE) else self.model(inputs, times)
         loss = self.loss_fn(outputs, labels.long())
         self.log('val_loss', loss, prog_bar=True)
+
         return loss
 
     def backward(self, loss, optimizer, optimizer_idx):
@@ -113,21 +157,21 @@ class LiTUNet(pl.LightningModule):
 
 
 if __name__ == "__main__":
-    model = LiTUNet(batch_size=64)
+    model = LiTUNet(
+        batch_size=128,
+        learning_rate=0.05,
+        num_workers=4,
+    )
 
     trainer = None
     if torch.cuda.is_available():
         trainer = pl.Trainer(
             accelerator='gpu', 
             devices=1, 
-            max_epochs=50, 
-            auto_lr_find=True,
-            # auto_scale_batch_size=True,
+            max_epochs=200,
             auto_select_gpus=True,
         )
     else:
         trainer = pl.Trainer(max_epochs=1)
-    # call tune to find the lr
-    trainer.tune(model)
 
     trainer.fit(model)
