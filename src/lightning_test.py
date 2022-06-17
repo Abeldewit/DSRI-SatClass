@@ -18,7 +18,7 @@ class LiTUNet(pl.LightningModule):
     def __init__(
         self, 
         batch_size = 4,
-        learning_rate = 0.01,
+        learning_rate = 0.017378008287493765,
     ):
         super().__init__()
         self.model = UNet(num_classes=20)
@@ -82,7 +82,7 @@ class LiTUNet(pl.LightningModule):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=3, verbose=True)
 
-        return {'optimizer': optimizer, 'scheduler': scheduler, 'monitor': 'val_loss'}
+        return [optimizer], [scheduler]
 
     def training_step(self, train_batch, batch_idx):
         inputs, labels, times = train_batch
