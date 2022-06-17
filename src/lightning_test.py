@@ -144,15 +144,15 @@ class LiTUNet(pl.LightningModule):
         
         # Log metrics
         self.log('train_loss', loss, prog_bar=True)
-        self.accuracy_train(outputs, labels)
+        self.accuracy_train(outputs, labels.int())
         self.log('train_acc', self.accuracy_train, on_step=True, on_epoch=False)
-        self.precision_train(outputs, labels)
+        self.precision_train(outputs, labels.int())
         self.log('train_precision', self.precision_train, on_step=True, on_epoch=False)
-        self.recall_train(outputs, labels)
+        self.recall_train(outputs, labels.int())
         self.log('train_recall', self.recall_train, on_step=True, on_epoch=False)
-        self.f1_train(outputs, labels)
+        self.f1_train(outputs, labels.int())
         self.log('train_f1', self.f1_train, on_step=True, on_epoch=False)
-        self.jaccard_train(outputs, labels)
+        self.jaccard_train(outputs, labels.int())
         self.log('train_jaccard', self.jaccard_train, on_step=True, on_epoch=False)
 
         return loss
@@ -164,15 +164,15 @@ class LiTUNet(pl.LightningModule):
 
         # Log metrics
         self.log('val_loss', loss, prog_bar=True)
-        self.accuracy_val(outputs, labels)
+        self.accuracy_val(outputs, labels.int())
         self.log('val_acc', self.accuracy_val, on_step=True, on_epoch=True)
-        self.precision_val(outputs, labels)
+        self.precision_val(outputs, labels.int())
         self.log('val_precision', self.precision_val, on_step=True, on_epoch=True)
-        self.recall_val(outputs, labels)
+        self.recall_val(outputs, labels.int())
         self.log('val_recall', self.recall_val, on_step=True, on_epoch=True)
-        self.f1_val(outputs, labels)
+        self.f1_val(outputs, labels.int())
         self.log('val_f1', self.f1_val, on_step=True, on_epoch=True)
-        self.jaccard_val(outputs, labels)
+        self.jaccard_val(outputs, labels.int())
 
         return loss
 
