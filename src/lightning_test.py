@@ -87,6 +87,13 @@ if __name__ == "__main__":
 
     trainer = pl.Trainer(max_epochs=1)
     if torch.cuda.is_available():
-        trainer = pl.Trainer(accelerator='gpu', devices=1, max_epochs=50)
+        trainer = pl.Trainer(
+            accelerator='gpu', 
+            devices=1, 
+            max_epochs=50, 
+            auto_lr_find=True,
+            auto_scale_batch_size=True,
+            auto_select_gpus=True,
+        )
 
     trainer.fit(model, train, val)
