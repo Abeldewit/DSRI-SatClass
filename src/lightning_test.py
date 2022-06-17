@@ -4,7 +4,6 @@ import os, sys
 
 root_dir = os.path.abspath(os.getcwd())
 sys.path.insert(0, root_dir)
-print(sys.path)
 from src.backbones.UNet.unet import conv_block, encoder_block, decoder_block, UNet
 from src.backbones.UTAE.utae import UTAE
 from src.backbones.Vit.model.vit import VisionTransformer
@@ -35,7 +34,7 @@ class LiTUNet(pl.LightningModule):
         return out
 
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.parameters(), lr=(self.lr or self.learning_rate))
+        optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=3, verbose=True)
 
         return {'optimizer': optimizer, 'scheduler': scheduler, 'monitor': 'val_loss'}
