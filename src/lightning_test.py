@@ -80,4 +80,7 @@ if __name__ == "__main__":
     train, val, test = create_split_dataloaders(**standard_args, **test_args[0], shuffle=True, batch_size=4)
 
     trainer = pl.Trainer(max_epochs=1)
+    if torch.cuda.is_available():
+        trainer = pl.Trainer(accelerator='gpu', max_epochs=50)
+
     trainer.fit(model, train, val)
