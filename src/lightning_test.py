@@ -42,11 +42,19 @@ class LiTUNet(pl.LightningModule):
             },
         ]
         
-        self.precision = Precision(num_classes=20, average='macro', mdmc_average='samplewise').to(device)
-        self.recall = Recall(num_classes=20, average='macro', mdmc_average='samplewise').to(device)
-        self.accuracy = Accuracy(num_classes=20, average='weighted', mdmc_average='samplewise').to(device)
-        self.f1 = F1Score(num_classes=20, average='macro', mdmc_average='samplewise').to(device)
-        self.jaccard = JaccardIndex(num_classes=20, average='weighted', mdmc_average='samplewise').to(device)
+        # Training metrics
+        self.precision = Precision(num_classes=20, average='macro', mdmc_average='samplewise')
+        self.recall = Recall(num_classes=20, average='macro', mdmc_average='samplewise')
+        self.accuracy = Accuracy(num_classes=20, average='weighted', mdmc_average='samplewise')
+        self.f1 = F1Score(num_classes=20, average='macro', mdmc_average='samplewise')
+        self.jaccard = JaccardIndex(num_classes=20, average='weighted', mdmc_average='samplewise')
+
+        # Validation metrics
+        self.precision_val = Precision(num_classes=20, average='macro', mdmc_average='samplewise')
+        self.recall_val = Recall(num_classes=20, average='macro', mdmc_average='samplewise')
+        self.accuracy_val = Accuracy(num_classes=20, average='weighted', mdmc_average='samplewise')
+        self.f1_val = F1Score(num_classes=20, average='macro', mdmc_average='samplewise')
+        self.jaccard_val = JaccardIndex(num_classes=20, average='weighted', mdmc_average='samplewise')
         
         self.model = UNet(
             enc_channels=(10, 64, 128, 256, 512),
@@ -133,17 +141,38 @@ class LiTUNet(pl.LightningModule):
         inputs, labels, times = train_batch
         outputs = self.model(inputs) if not isinstance(self.model, UTAE) else self.model(inputs, times)
         loss = self.loss_fn(outputs, labels.long())
-
+        
+        # Log metrics
         self.log('train_loss', loss, prog_bar=True)
+        self.accuracy(outputs, labels)
+        self.log('train_acc', self.accuracy, on_step=True, on_epoch=False)
+        self.precision(outputs, labels)
+        self.log('train_precision', self.precision, on_step=True, on_epoch=False)
+        self.recall(outputs, labels)
+        self.log('train_recall', self.recall, on_step=True, on_epoch=False)
+        self.f1(outputs, labels)
+        self.log('train_f1', self.f1, on_step=True, on_epoch=False)
+        self.jaccard(outputs, labels)
+        self.log('train_jaccard', self.jaccard, on_step=True, on_epoch=False)
+
         return loss
-    
-    def 
 
     def validation_step(self, val_batch, batch_idx):
         inputs, labels, times = val_batch
         outputs = self.model(inputs) if not isinstance(self.model, UTAE) else self.model(inputs, times)
         loss = self.loss_fn(outputs, labels.long())
+
+        # Log metrics
         self.log('val_loss', loss, prog_bar=True)
+        self.accuracy_val(outputs, labels)
+        self.log('val_acc', self.accuracy_val, on_step=True, on_epoch=True)
+        self.precision_val(outputs, labels)
+        self.log('val_precision', self.precision_val, on_step=True, on_epoch=True)
+        self.recall_val(outputs, labels)
+        self.log('val_recall', self.recall_val, on_step=True, on_epoch=True)
+        self.f1_val(outputs, labels)
+        self.log('val_f1', self.f1_val, on_step=True, on_epoch=True)
+        self.jaccard_val(outputs, labels)
 
         return loss
 
