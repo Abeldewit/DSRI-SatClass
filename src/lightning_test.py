@@ -77,7 +77,13 @@ if __name__ == "__main__":
             'fold': 1,
         },
     ]
-    train, val, test = create_split_dataloaders(**standard_args, **test_args[0], shuffle=True, batch_size=4)
+    train, val, test = create_split_dataloaders(
+        **standard_args, 
+        **test_args[0], 
+        shuffle=True, 
+        batch_size=4,
+        num_workers=6
+    )
 
     trainer = pl.Trainer(max_epochs=1)
     if torch.cuda.is_available():
