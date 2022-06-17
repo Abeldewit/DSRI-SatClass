@@ -34,7 +34,7 @@ class LiTUNet(pl.LightningModule):
         return out
 
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.parameters(), lr=1e-3)
+        optimizer = torch.optim.Adam(self.parameters(), lr=.01)
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=3, verbose=True)
 
         return {'optimizer': optimizer, 'scheduler': scheduler, 'monitor': 'val_loss'}
@@ -81,7 +81,7 @@ if __name__ == "__main__":
         **standard_args, 
         **test_args[0], 
         shuffle=True, 
-        batch_size=4,
+        batch_size=64,
         num_workers=6
     )
 
