@@ -55,7 +55,7 @@ class LiTUNet(pl.LightningModule):
         return out
 
     def train_dataloader(self):
-        train_set = PASTIS(*self.standard_args, **self.test_args[0], subset_type='train')
+        train_set = PASTIS(**self.standard_args, **self.test_args[0], subset_type='train')
         train_loader = DataLoader(
             train_set,
             batch_size=self.batch_size,
@@ -67,7 +67,7 @@ class LiTUNet(pl.LightningModule):
         return train_loader
 
     def val_dataloader(self):
-        val_set = PASTIS(*self.standard_args, **self.test_args[0], subset_type='val')
+        val_set = PASTIS(**self.standard_args, **self.test_args[0], subset_type='val')
         val_loader = DataLoader(
             val_set,
             batch_size=self.batch_size,
