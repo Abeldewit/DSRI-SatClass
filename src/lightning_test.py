@@ -17,6 +17,7 @@ class LiTUNet(pl.LightningModule):
         super().__init__()
         self.model = UNet(num_classes=20)
         self.learning_rate = 0.01
+        self.batch_size = 8
         self.loss_fn = torch.nn.CrossEntropyLoss(label_smoothing=.1)
 
     def forward(self, x):
@@ -64,6 +65,22 @@ class LiTUNet(pl.LightningModule):
 
 if __name__ == "__main__":
     model = LiTUNet()
+
+    trainer = None
+    if torch.cuda.is_available():
+        trainer = pl.Trainer(
+            accelerator='gpu', 
+            devices=1, 
+            max_epochs=50, 
+            auto_lr_find=True,
+            auto_scale_batch_size=True,
+            auto_select_gpus=True,
+        )
+    else:
+        trainer = pl.Trainer(max_epochs=1)
+    # call tune to find the lr
+    trainer.tune(model)
+
     standard_args = {
         'path_to_pastis':'/workspace/persistent/data/PASTIS/', 
         'data_files': 'DATA_S2', 
@@ -81,24 +98,8 @@ if __name__ == "__main__":
         **standard_args, 
         **test_args[0], 
         shuffle=True, 
-        batch_size=64,
+        batch_size=model.batch_size,
         num_workers=6
     )
-
-    trainer = None
-    if torch.cuda.is_available():
-        trainer = pl.Trainer(
-            accelerator='gpu', 
-            devices=1, 
-            max_epochs=50, 
-            auto_lr_find=True,
-            auto_scale_batch_size=True,
-            auto_select_gpus=True,
-        )
-    else:
-        trainer = pl.Trainer(max_epochs=1)
-
-    # call tune to find the lr
-    trainer.tune(model)
 
     trainer.fit(model, train, val)
