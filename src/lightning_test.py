@@ -12,13 +12,33 @@ from src.backbones.Vit.model.segmenter import Segmenter
 from src.utilities.dataloader import create_split_dataloaders, PASTIS
 del sys.path[0]
 
+from torch.utils.data import DataLoader
+
 class LiTUNet(pl.LightningModule):
-    def __init__(self, enc_channels=(3, 64, 128, 256, 512), bottleneck=1024, num_classes=20):
+    def __init__(
+        self, 
+        batch_size = 4,
+        learning_rate = 0.01,
+    ):
         super().__init__()
         self.model = UNet(num_classes=20)
-        self.learning_rate = 0.01
-        self.batch_size = 8
+        self.learning_rate = learning_rate
+        self.batch_size = batch_size
         self.loss_fn = torch.nn.CrossEntropyLoss(label_smoothing=.1)
+
+        self.standard_args = {
+            'path_to_pastis':'/workspace/persistent/data/PASTIS/', 
+            'data_files': 'DATA_S2', 
+            'label_files':'ANNOTATIONS',
+        }
+
+        self.test_args = [
+            {
+                'rgb_only': True, 
+                'multi_temporal': False,
+                'fold': 1,
+            },
+        ]
 
     def forward(self, x):
         skips = []
@@ -33,6 +53,30 @@ class LiTUNet(pl.LightningModule):
 
         out = self.out(x)
         return out
+
+    def train_dataloader(self):
+        train_set = PASTIS(*self.standard_args, **self.test_args[0], subset_type='train')
+        train_loader = DataLoader(
+            train_set,
+            batch_size=self.batch_size,
+            shuffle=True,
+            num_workers=6,
+            pin_memory=True,
+            prefetch_factor=2
+        )
+        return train_loader
+
+    def val_dataloader(self):
+        val_set = PASTIS(*self.standard_args, **self.test_args[0], subset_type='val')
+        val_loader = DataLoader(
+            val_set,
+            batch_size=self.batch_size,
+            shuffle=False,
+            num_workers=6,
+            pin_memory=True,
+            prefetch_factor=2
+        )
+        return val_loader
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
@@ -81,19 +125,7 @@ if __name__ == "__main__":
     # call tune to find the lr
     trainer.tune(model)
 
-    standard_args = {
-        'path_to_pastis':'/workspace/persistent/data/PASTIS/', 
-        'data_files': 'DATA_S2', 
-        'label_files':'ANNOTATIONS',
-    }
-
-    test_args = [
-        {
-            'rgb_only': True, 
-            'multi_temporal': False,
-            'fold': 1,
-        },
-    ]
+    
     train, val, test = create_split_dataloaders(
         **standard_args, 
         **test_args[0], 
