@@ -42,11 +42,11 @@ def train_model(
     best_vloss = float('inf')
     for epoch_number in tqdm(range(n_epochs), desc='Total Training: '):
         # Initialize the metrics
-        acc = Accuracy(num_classes=20, mdmc_average='global').to(device)
-        prec = Precision(num_classes=20, mdmc_average='global').to(device)
-        rec = Recall(num_classes=20, mdmc_average='global').to(device)
-        f1 = F1Score(num_classes=20, mdmc_average='global').to(device)
-        jaccard = JaccardIndex(num_classes=20).to(device)
+        prec = Precision(num_classes=20, average='macro', mdmc_average='samplewise').to(device)
+        rec = Recall(num_classes=20, average='macro', mdmc_average='samplewise').to(device)
+        acc = Accuracy(num_classes=20, average='weighted', mdmc_average='samplewise').to(device)
+        f1 = F1Score(num_classes=20, average='macro', mdmc_average='samplewise').to(device)
+        jaccard = JaccardIndex(num_classes=20, average='weighted', mdmc_average='samplewise').to(device)
         
         # Make sure gradient tracking is on, and do a pass over the data
         model.train()
@@ -73,22 +73,20 @@ def train_model(
 
             # Make predictions for this batch
             voutputs = model(vinputs) if not isinstance(model, UTAE) else model(vinputs, batch_positions=vtimes)
-            vprediction = torch.argmax(voutputs, dim=1)
 
             # Compute the loss and its gradients
             vloss = loss_function(voutputs, vlabels.long())
             running_vloss += vloss.item()
             
-
             # Compute the metrics
-            acc(vprediction, vlabels.long())
-            prec(vprediction, vlabels.long())
-            rec(vprediction, vlabels.long())
-            f1(vprediction, vlabels.long())
-            jaccard(vprediction, vlabels.long())
+            acc(voutputs, vlabels.long())
+            prec(voutputs, vlabels.long())
+            rec(voutputs, vlabels.long())
+            f1(voutputs, vlabels.long())
+            jaccard(voutputs, vlabels.long())
 
             # Garbage collection
-            del vinputs, vlabels, vtimes, voutputs, vprediction, vloss
+            del vinputs, vlabels, vtimes, voutputs, vloss
             if device.type == 'cuda':
                 torch.cuda.empty_cache()
         

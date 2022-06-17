@@ -1,4 +1,5 @@
 import torch
+import torchvision
 import sys, os
 import getopt
 
@@ -28,6 +29,7 @@ try:
             'end=',
             'key=',
             'num_workers=',
+            'learning_rate=',
         ])
 except:
     print('Error parsing arguments')
@@ -42,7 +44,9 @@ PATH = None
 START = None
 END = None
 NUMWORK = None
+LEARNING = None
 KEY = None
+
 for opt, arg in opts:
     if opt in ('-e', '--epochs'):
         EPOCHS = int(arg)
@@ -54,6 +58,8 @@ for opt, arg in opts:
         END = int(arg)
     elif opt in ('--num_workers',):
         NUMWORK = int(arg)
+    elif opt in ('--learning_rate',):
+        LEARNING = float(arg)
     elif opt in ('--key',):
         os.environ['IFTTT_KEY'] = arg
         try:
@@ -64,6 +70,11 @@ for opt, arg in opts:
 if EPOCHS is None or PATH is None:
     print('Error parsing arguments')
     sys.exit()
+
+if NUMWORK is None:
+    NUMWORK = 0
+if LEARNING is None:
+    LEARNING = learning_rate
 
 # Standard arguments for every experiment
 STD_ARGS = {
@@ -166,7 +177,7 @@ for exp, args in list(experiments.items()):
     model.to(device)
 
     # Create the optimizer
-    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+    optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING)
     # Create the loss function
     loss_function = torch.nn.CrossEntropyLoss(label_smoothing=.1)
 
