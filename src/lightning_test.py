@@ -43,11 +43,11 @@ class LiTUNet(pl.LightningModule):
         ]
         
         # Training metrics
-        self.precision = Precision(num_classes=20, average='macro', mdmc_average='samplewise')
-        self.recall = Recall(num_classes=20, average='macro', mdmc_average='samplewise')
-        self.accuracy = Accuracy(num_classes=20, average='weighted', mdmc_average='samplewise')
-        self.f1 = F1Score(num_classes=20, average='macro', mdmc_average='samplewise')
-        self.jaccard = JaccardIndex(num_classes=20, average='weighted', mdmc_average='samplewise')
+        self.precision_train = Precision(num_classes=20, average='macro', mdmc_average='samplewise')
+        self.recall_train = Recall(num_classes=20, average='macro', mdmc_average='samplewise')
+        self.accuracy_train = Accuracy(num_classes=20, average='weighted', mdmc_average='samplewise')
+        self.f1_train = F1Score(num_classes=20, average='macro', mdmc_average='samplewise')
+        self.jaccard_train = JaccardIndex(num_classes=20, average='weighted', mdmc_average='samplewise')
 
         # Validation metrics
         self.precision_val = Precision(num_classes=20, average='macro', mdmc_average='samplewise')
@@ -144,16 +144,16 @@ class LiTUNet(pl.LightningModule):
         
         # Log metrics
         self.log('train_loss', loss, prog_bar=True)
-        self.accuracy(outputs, labels)
-        self.log('train_acc', self.accuracy, on_step=True, on_epoch=False)
-        self.precision(outputs, labels)
-        self.log('train_precision', self.precision, on_step=True, on_epoch=False)
-        self.recall(outputs, labels)
-        self.log('train_recall', self.recall, on_step=True, on_epoch=False)
-        self.f1(outputs, labels)
-        self.log('train_f1', self.f1, on_step=True, on_epoch=False)
-        self.jaccard(outputs, labels)
-        self.log('train_jaccard', self.jaccard, on_step=True, on_epoch=False)
+        self.accuracy_train(outputs, labels)
+        self.log('train_acc', self.accuracy_train, on_step=True, on_epoch=False)
+        self.precision_train(outputs, labels)
+        self.log('train_precision', self.precision_train, on_step=True, on_epoch=False)
+        self.recall_train(outputs, labels)
+        self.log('train_recall', self.recall_train, on_step=True, on_epoch=False)
+        self.f1_train(outputs, labels)
+        self.log('train_f1', self.f1_train, on_step=True, on_epoch=False)
+        self.jaccard_train(outputs, labels)
+        self.log('train_jaccard', self.jaccard_train, on_step=True, on_epoch=False)
 
         return loss
 
