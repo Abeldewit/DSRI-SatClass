@@ -65,7 +65,7 @@ class LiTUNet(pl.LightningModule):
 if __name__ == "__main__":
     model = LiTUNet()
     standard_args = {
-        'path_to_pastis':'/Users/abel/Coding/Capgemini/DSRI-SatClass/src/data/PASTIS', 
+        'path_to_pastis':'/workspace/persistent/data/PASTIS/', 
         'data_files': 'DATA_S2', 
         'label_files':'ANNOTATIONS',
     }
