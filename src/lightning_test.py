@@ -98,4 +98,7 @@ if __name__ == "__main__":
     else:
         trainer = pl.Trainer(max_epochs=1)
 
+    # call tune to find the lr
+    trainer.tune(model)
+
     trainer.fit(model, train, val)
