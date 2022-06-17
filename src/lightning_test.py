@@ -17,6 +17,7 @@ class LiTUNet(pl.LightningModule):
     def __init__(self, enc_channels=(3, 64, 128, 256, 512), bottleneck=1024, num_classes=20):
         super().__init__()
         self.model = UNet(num_classes=20)
+        self.learning_rate = 0.01
         self.loss_fn = torch.nn.CrossEntropyLoss(label_smoothing=.1)
 
     def forward(self, x):
@@ -34,7 +35,7 @@ class LiTUNet(pl.LightningModule):
         return out
 
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.parameters(), lr=.01)
+        optimizer = torch.optim.Adam(self.parameters(), lr=(self.lr or self.learning_rate))
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=3, verbose=True)
 
         return {'optimizer': optimizer, 'scheduler': scheduler, 'monitor': 'val_loss'}
