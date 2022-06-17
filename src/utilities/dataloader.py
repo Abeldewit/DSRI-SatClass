@@ -8,7 +8,7 @@ import json
 from datetime import datetime
 import multiprocessing as mp
 
-def create_split_dataloaders(batch_size:int, shuffle:bool, *args, **kwargs):
+def create_split_dataloaders(batch_size:int, shuffle:bool, num_workers:int=0, *args, **kwargs):
     """
     Creates three dataloaders from the PASTIS dataset, based on a fold.
     """
@@ -19,9 +19,31 @@ def create_split_dataloaders(batch_size:int, shuffle:bool, *args, **kwargs):
     val_set = PASTIS(*args, **kwargs, subset_type='val')
     test_set = PASTIS(*args, **kwargs, subset_type='test')
 
-    return DataLoader(train_set, batch_size=batch_size, shuffle=shuffle), \
-              DataLoader(val_set, batch_size=batch_size, shuffle=shuffle), \
-                DataLoader(test_set, batch_size=batch_size, shuffle=shuffle)
+    train= DataLoader(
+        train_set, 
+        batch_size=batch_size, 
+        shuffle=shuffle,
+        num_workers=num_workers,
+        pin_memory=True,
+        prefetch_factor=2,
+    )
+    val = DataLoader(
+        val_set, 
+        batch_size=batch_size, 
+        shuffle=False,
+        num_workers=num_workers,
+        pin_memory=True,
+        prefetch_factor=2,
+    )
+    test = DataLoader(
+        test_set, 
+        batch_size=batch_size, 
+        shuffle=False,
+        num_workers=num_workers,
+        pin_memory=True,
+        prefetch_factor=2,
+    )
+    return train, val, test
 
 
 class PASTIS(tdata.Dataset):
