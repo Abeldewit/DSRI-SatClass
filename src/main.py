@@ -1,0 +1,120 @@
+import torch
+import pytorch_lightning as pl
+import sys, os
+import getopt
+from argparse import ArgumentParser
+
+sys.path.insert(0, os.getcwd())
+from src.backbones.UNet.unet import UNet
+from src.backbones.UTAE.utae import UTAE
+from src.backbones.Vit.model.vit import VisionTransformer
+from src.backbones.Vit.model.decoder import MaskTransformer
+from src.backbones.Vit.model.segmenter import Segmenter
+from src.experiments.lightning_abstract import LitModule
+del sys.path[0]
+import json
+
+from pyifttt.webhook import send_notification
+
+
+def read_experiments():
+    # Read in the experiments
+    with open(os.path.join(os.getcwd(), 'src/experiments/experiments.json'), 'r') as f:
+        experiments = json.load(f)
+    return experiments
+
+def experiment_generator():
+    experiments = read_experiments()
+    for exp, args in list(experiments.items()):
+        print(f'\n\n** Running: {exp} **')
+        print('-'*27)
+        # Get the arguments
+        model_name = args['model']
+        batch_size = args['batch_size']
+        print(f'Model: {model_name}')
+
+        data_options = {
+            'rgb_only': args['rgb_only'],
+            'multi_temporal': args['multi_temporal'],
+            'fold': args['fold'],
+        }
+
+        print('Options:\n  {}'.format('\n  '.join(['{}: {}'.format(k, v) for k, v in data_options.items()])))
+        print('-'*27)
+        yield args, data_options
+
+def create_model(model_name, args):
+    # Model setup
+    models = {
+        'UNet': UNet,
+        'UTAE': UTAE,
+        'ViT': {
+            'encoder': VisionTransformer, 
+            'decoder': MaskTransformer, 
+            'segmenter': Segmenter
+            },
+    }
+    # Creating the model
+    if model_name != 'ViT':
+        model_options = {}
+        model_options.update(args['standard_arguments'])
+        model_options.update(args['special_arguments'])
+
+        model = models[model_name](**model_options)
+    else: # Vit needs some special attention
+        encoder_options = args['standard_arguments']['encoder']
+        decoder_options = args['standard_arguments']['decoder']
+        segmenter_options = args['standard_arguments']['segmenter']
+        encoder_options.update(args['special_arguments']['encoder'])
+
+        model = models[model_name]['segmenter'](
+            encoder=models[model_name]['encoder'](**encoder_options),
+            decoder=models[model_name]['decoder'](**decoder_options),
+            **segmenter_options
+        )
+    return model
+
+def create_trainer(hparams):
+    trainer = pl.Trainer(
+        accelerator=hparams.accelerator,
+        devices=hparams.devices,
+        max_epochs=hparams.epochs,
+    )
+    return trainer
+
+
+def main(hparams):
+    experiment_iter = experiment_generator()
+
+    for args, data_args in experiment_iter:
+        # Create the model
+        model = create_model(args['model'], args)
+        
+        # Create lightning module
+        lightning_module = LitModule(
+            model=model,
+            data_args=data_args,
+            path=hparams.path,
+            batch_size=5,
+            num_workers=hparams.num_workers,
+        )
+
+        # Create the trainer
+        trainer = create_trainer(hparams)
+
+        # Run the experiment
+        trainer.fit(lightning_module)
+
+
+
+if __name__ == "__main__":
+    parser = ArgumentParser()
+    parser.add_argument('-e', '--epochs', type=int, default=200)
+    parser.add_argument('--accelerator', type=str, default='cpu')
+    parser.add_argument('--devices', type=int, default=1)
+    parser.add_argument('--num_workers', type=int, default=0)
+    parser.add_argument('--path', type=str, default='/workspace/persistent/data/PASTIS')
+    
+    args = parser.parse_args()
+    
+    main(args)

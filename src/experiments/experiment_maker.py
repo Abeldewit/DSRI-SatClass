@@ -6,7 +6,7 @@ experiment_options = {
     'model': ('UNet', 'UTAE', 'ViT'),
     'rgb_only': ('rgb', 'spec'), 
     'multi_temporal': ('temp', 'no_temp'),
-    'fold': (1, 2, 3, 4, 5),
+    'fold': (1,),
 }
 
 data_options = {
@@ -18,7 +18,7 @@ data_options = {
 
 batch_size_options = {
     'UNet': 64,
-    'UTAE': 8,
+    'UTAE': 4,
     'ViT': 64,
 }
 
