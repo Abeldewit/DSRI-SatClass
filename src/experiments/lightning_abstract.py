@@ -3,6 +3,7 @@ import pytorch_lightning as pl
 import os, sys
 from torch.utils.data import DataLoader
 from torchmetrics.classification import Accuracy, Precision, Recall, F1Score, JaccardIndex
+import numpy as np
 
 root_dir = os.path.abspath(os.getcwd())
 sys.path.insert(0, root_dir)
@@ -24,6 +25,7 @@ class LitModule(pl.LightningModule):
         batch_size=4,
         learning_rate=0.05,
         loss_function = torch.nn.CrossEntropyLoss(label_smoothing=.1),
+        save_dir = './models/',
     ):
         super().__init__()
         self.num_workers = num_workers
@@ -52,6 +54,9 @@ class LitModule(pl.LightningModule):
         self.accuracy_val = Accuracy(num_classes=20, average='weighted', mdmc_average='samplewise')
         self.f1_val = F1Score(num_classes=20, average='macro', mdmc_average='samplewise')
         self.jaccard_val = JaccardIndex(num_classes=20, average='weighted', mdmc_average='samplewise')
+
+        self.best_vloss = float('inf')
+        self.save_dir = save_dir
         
         self.model = model
 
@@ -101,6 +106,7 @@ class LitModule(pl.LightningModule):
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
+        self.optimizer = optimizer
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
             optimizer,
             mode='min',
@@ -127,28 +133,22 @@ class LitModule(pl.LightningModule):
         inputs, labels, times = train_batch
         outputs = self(inputs, times)
         loss = self.loss_fn(outputs, labels.long())
+        self.log("metrics/batch/loss", loss, prog_bar=False)
 
         # Update metrics
-        self.accuracy_train(outputs, labels.int())
-        self.precision_train(outputs, labels.int())
-        self.recall_train(outputs, labels.int())
-        self.f1_train(outputs, labels.int())
-        self.jaccard_train(outputs, labels.int())
+        accuracy = self.accuracy_train(outputs, labels.int())
+        precision = self.precision_train(outputs, labels.int())
+        recall = self.recall_train(outputs, labels.int())
+        f1 = self.f1_train(outputs, labels.int())
+        jaccard = self.jaccard_train(outputs, labels.int())
 
         # Log metrics
-        self.log(f'Loss/train_step', loss, on_step=True, on_epoch=False, prog_bar=True)
-        self.log(f'Loss/train', loss, on_step=False, on_epoch=True)
-        self.log(
-            f"Performance/train", {
-                'Accuracy': self.accuracy_train,
-                'Precision': self.precision_train,
-                'Recall': self.recall_train,
-                'F1': self.f1_train,
-                'mIoU': self.jaccard_train,
-            },
-            on_step=True,
-            on_epoch=True,
-        )
+        self.log("metrics/batch/acc", accuracy)
+        self.log("metrics/batch/precision", precision)
+        self.log("metrics/batch/recall", recall)
+        self.log("metrics/batch/f1", f1)
+        self.log("metrics/batch/jaccard", jaccard)
+
         return loss
 
     def validation_step(self, val_batch, batch_idx):
@@ -163,21 +163,46 @@ class LitModule(pl.LightningModule):
         self.f1_val(voutputs, vlabels.int())
         self.jaccard_val(voutputs, vlabels.int())
 
-        self.log(f'Loss/val_step', vloss, on_step=True, on_epoch=False)
-        self.log(f'Loss/val', vloss, prog_bar=True, on_step=False, on_epoch=True)
-        self.log(
-            f"Performance/val", {
-                'Accuracy': self.accuracy_val,
-                'Precision': self.precision_val,
-                'Recall': self.recall_val,
-                'F1': self.f1_val,
-                'mIoU': self.jaccard_val,
-            },
-            on_step=False,
-            on_epoch=True,
-        )
+        # Save model if validation loss is lower
+        if vloss < self.best_vloss:
+            self.best_vloss = vloss
+            self.save_model(vloss)
+        
+        return {'loss': vloss.item()}
 
-        return vloss
+    def on_validation_end(self):
+        pass
 
+    def validation_epoch_end(self, outputs):
+        # Log metrics
+        loss = np.array([])
+        for results_dict in outputs:
+            loss = np.append(loss, results_dict["loss"])
+        
+        self.logger.experiment["val/loss"] = loss.mean()
+        self.logger.experiment["metrics/batch/acc"] = self.accuracy_val.compute()
+        self.logger.experiment["metrics/batch/precision"] = self.precision_val.compute()
+        self.logger.experiment["metrics/batch/recall"] = self.recall_val.compute()
+        self.logger.experiment["metrics/batch/f1"] = self.f1_val.compute()
+        self.logger.experiment["metrics/batch/jaccard"] = self.jaccard_val.compute()
+        
+        self.accuracy_val.reset()
+        self.precision_val.reset()
+        self.recall_val.reset()
+        self.f1_val.reset()
+        self.jaccard_val.reset()
 
+    def save_model(self, loss):
+        model_name = str(type(self.model)).split('.')[2]
+        name = model_name + "_" + str(list(self.data_args.values()))
+        if not os.path.exists(os.path.join(self.save_dir, model_name)):
+            os.makedirs(os.path.join(self.save_dir, model_name))
+
+        path = os.path.join(self.save_dir, model_name, name+f'_e{self.current_epoch}') + '.md5'
+        torch.save({
+                'epoch': self.current_epoch,
+                'model_state_dict': self.model.state_dict(),
+                'optimizer_state_dict': self.optimizer.state_dict(),
+                'loss': loss,
+                }, path)
 

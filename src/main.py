@@ -7,6 +7,9 @@ from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 import json
 from pyifttt.webhook import send_notification
 
+from pytorch_lightning.loggers import NeptuneLogger
+
+
 sys.path.insert(0, os.getcwd())
 from src.backbones.UNet.unet import UNet
 from src.backbones.UTAE.utae import UTAE
@@ -41,7 +44,7 @@ def experiment_generator():
 
         print('Options:\n  {}'.format('\n  '.join(['{}: {}'.format(k, v) for k, v in data_options.items()])))
         print('-'*27)
-        yield args, data_options
+        yield exp, args, data_options
 
 def create_model(model_name, args):
     # Model setup
@@ -74,17 +77,31 @@ def create_model(model_name, args):
         )
     return model
 
-def create_trainer(hparams):
+def create_trainer(hparams, exp):
     early_stopping = EarlyStopping(
         monitor="Loss/val", 
         mode="max", 
         patience=hparams.patience,
         check_on_train_epoch_end=False,)
+
+    neptune_logger = NeptuneLogger(
+        project="abeldewit/sat-class",
+        api_key="eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkiLCJhcGlfdXJsIjoiaHR0cHM6Ly9hcHAubmVwdHVuZS5haSIsImFwaV9rZXkiOiJiMmVlMDg0Ny0yZDI4LTQxYTUtYjU4MC02MGQ0MGIxYWM2NzEifQ==",
+        log_model_checkpoints=False,
+        params={
+            'max_epochs': hparams.epochs,
+            'early_stopping_patience': hparams.patience,
+            'learning_rate': hparams.learning_rate,
+        },
+        experiment_name=exp,
+    )
+
     trainer = pl.Trainer(
         accelerator=hparams.accelerator,
         devices=hparams.devices,
         max_epochs=hparams.epochs,
         callbacks=[early_stopping],
+        logger=neptune_logger,
     )
     return trainer
 
@@ -92,7 +109,7 @@ def create_trainer(hparams):
 def main(hparams):
     experiment_iter = experiment_generator()
 
-    for args, data_args in experiment_iter:
+    for exp, args, data_args in experiment_iter:
         # Create the model
         model = create_model(args['model'], args)
         
@@ -107,7 +124,7 @@ def main(hparams):
         )
 
         # Create the trainer
-        trainer = create_trainer(hparams)
+        trainer = create_trainer(hparams, exp)
 
         #TODO: Remove
         # Test validation
