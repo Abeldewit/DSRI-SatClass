@@ -88,12 +88,15 @@ def create_trainer(hparams, exp):
         project="abeldewit/sat-class",
         api_key="eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkiLCJhcGlfdXJsIjoiaHR0cHM6Ly9hcHAubmVwdHVuZS5haSIsImFwaV9rZXkiOiJiMmVlMDg0Ny0yZDI4LTQxYTUtYjU4MC02MGQ0MGIxYWM2NzEifQ==",
         log_model_checkpoints=False,
-        params={
+        run=exp,
+    )
+
+    neptune_logger.log_hyperparams(
+        {
             'max_epochs': hparams.epochs,
             'early_stopping_patience': hparams.patience,
             'learning_rate': hparams.learning_rate,
-        },
-        experiment_name=exp,
+        }
     )
 
     trainer = pl.Trainer(
