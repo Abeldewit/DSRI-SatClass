@@ -136,7 +136,8 @@ class LitModule(pl.LightningModule):
         self.jaccard_train(outputs, labels.int())
 
         # Log metrics
-        self.log(f'Loss/train', loss, prog_bar=True, on_step=True, on_epoch=True)
+        self.log(f'Loss/train_step', loss, on_step=True, on_epoch=False, prog_bar=True)
+        self.log(f'Loss/train', loss, on_step=False, on_epoch=True)
         self.log(
             f"Performance/train", {
                 'Accuracy': self.accuracy_train,
