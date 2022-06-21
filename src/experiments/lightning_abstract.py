@@ -122,7 +122,7 @@ class LitModule(pl.LightningModule):
         lr_scheduler_config = {
             "scheduler": scheduler,
             "interval": "epoch",
-            "monitor": "val/loss",
+            "monitor": "metrics/val/loss",
             "strict": False,
             "name": None,
         }
