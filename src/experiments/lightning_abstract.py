@@ -162,7 +162,8 @@ class LitModule(pl.LightningModule):
         self.f1_val(voutputs, vlabels.int())
         self.jaccard_val(voutputs, vlabels.int())
 
-        self.log(f'Loss/val', vloss, prog_bar=True, on_step=True, on_epoch=True)
+        self.log(f'Loss/val_step', vloss, on_step=True, on_epoch=False)
+        self.log(f'Loss/val', vloss, prog_bar=True, on_step=False, on_epoch=True)
         self.log(
             f"Performance/val", {
                 'Accuracy': self.accuracy_val,
