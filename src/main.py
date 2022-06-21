@@ -85,7 +85,6 @@ def create_trainer(hparams):
         devices=hparams.devices,
         max_epochs=hparams.epochs,
         callbacks=[early_stopping],
-        num_sanity_val_steps=2,
     )
     return trainer
 
@@ -108,6 +107,10 @@ def main(hparams):
 
         # Create the trainer
         trainer = create_trainer(hparams)
+
+        #TODO: Remove
+        # Test validation
+        trainer.validate(lightning_module)
 
         # Run the experiment
         trainer.fit(lightning_module)
