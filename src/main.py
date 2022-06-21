@@ -76,7 +76,7 @@ def create_model(model_name, args):
 
 def create_trainer(hparams):
     early_stopping = EarlyStopping(
-        monitor="val_jaccard", 
+        monitor="Performance/val_epoch_val_jaccard", 
         mode="max", 
         patience=hparams.patience,
         check_on_train_epoch_end=False,)
@@ -85,6 +85,7 @@ def create_trainer(hparams):
         devices=hparams.devices,
         max_epochs=hparams.epochs,
         callbacks=[early_stopping],
+        num_sanity_val_steps=2,
     )
     return trainer
 
