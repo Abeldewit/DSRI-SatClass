@@ -105,7 +105,7 @@ class LitModule(pl.LightningModule):
             optimizer,
             mode='min',
             factor=0.1,
-            patience=10,
+            patience=5,
             verbose=True,
             threshold=1e-4,
             threshold_mode='rel',
