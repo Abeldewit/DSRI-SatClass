@@ -103,6 +103,7 @@ def main(hparams):
             path=hparams.path,
             batch_size=args['batch_size'],
             num_workers=hparams.num_workers,
+            learning_rate=hparams.learning_rate,
         )
 
         # Create the trainer
@@ -125,6 +126,7 @@ if __name__ == "__main__":
     parser.add_argument('--num_workers', type=int, default=0)
     parser.add_argument('--path', type=str, default='/workspace/persistent/data/PASTIS')
     parser.add_argument('--patience', type=int, default=10)
+    parser.add_argument('--learning_rate', type=float, default=0.05)
     
     args = parser.parse_args()
     

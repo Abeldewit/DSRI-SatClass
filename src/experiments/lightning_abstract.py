@@ -106,7 +106,11 @@ class LitModule(pl.LightningModule):
             mode='min',
             factor=0.1,
             patience=10,
-            verbose=True
+            verbose=True,
+            threshold=1e-4,
+            threshold_mode='rel',
+            min_lr=0.,
+            eps=1e-8,
         )
 
         lr_scheduler_config = {
