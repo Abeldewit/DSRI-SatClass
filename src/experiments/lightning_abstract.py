@@ -164,8 +164,8 @@ class LitModule(pl.LightningModule):
         jaccard(outputs, labels.int())
 
         # Log metrics
-        self.log(f'{prefix}_loss', loss, prog_bar=True)
-        self.log("performance", {
+        self.log(f'Loss/{prefix}', loss, prog_bar=True)
+        self.log(f"Performance/{prefix}", {
             f'{prefix}_acc': acc,
             f'{prefix}_prec': prec,
             f'{prefix}_rec': rec,
