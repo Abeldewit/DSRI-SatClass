@@ -97,7 +97,7 @@ def main(hparams):
             model=model,
             data_args=data_args,
             path=hparams.path,
-            batch_size=5,
+            batch_size=hparams.batch_size,
             num_workers=hparams.num_workers,
         )
 
