@@ -84,7 +84,7 @@ def create_trainer(hparams, exp):
         patience=hparams.patience,
         check_on_train_epoch_end=False,
         verbose=True,
-        strics=False,
+        strict=False,
     )
 
     neptune_logger = NeptuneLogger(

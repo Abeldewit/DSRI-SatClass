@@ -180,6 +180,7 @@ class LitModule(pl.LightningModule):
             loss = np.append(loss, results_dict["loss"])
         
         self.logger.experiment["val/loss"] = loss.mean()
+        self.log("metrics/val/loss", loss.mean(), prog_bar=True)
         self.logger.experiment["metrics/batch/acc"] = self.accuracy_val.compute()
         self.logger.experiment["metrics/batch/precision"] = self.precision_val.compute()
         self.logger.experiment["metrics/batch/recall"] = self.recall_val.compute()
