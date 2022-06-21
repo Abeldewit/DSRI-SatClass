@@ -3,7 +3,7 @@
         "model": "UNet",
         "rgb_only": true,
         "multi_temporal": false,
-        "batch_size": 64,
+        "batch_size": 128,
         "fold": 1,
         "standard_arguments": {
             "num_classes": 20
@@ -24,7 +24,7 @@
         "model": "UNet",
         "rgb_only": false,
         "multi_temporal": false,
-        "batch_size": 64,
+        "batch_size": 128,
         "fold": 1,
         "standard_arguments": {
             "num_classes": 20
@@ -125,7 +125,7 @@
         "model": "ViT",
         "rgb_only": true,
         "multi_temporal": false,
-        "batch_size": 64,
+        "batch_size": 128,
         "fold": 1,
         "standard_arguments": {
             "encoder": {
@@ -165,7 +165,7 @@
         "model": "ViT",
         "rgb_only": false,
         "multi_temporal": false,
-        "batch_size": 64,
+        "batch_size": 128,
         "fold": 1,
         "standard_arguments": {
             "encoder": {

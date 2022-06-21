@@ -17,9 +17,9 @@ data_options = {
 }
 
 batch_size_options = {
-    'UNet': 64,
+    'UNet': 128,
     'UTAE': 4,
-    'ViT': 64,
+    'ViT': 128,
 }
 
 standard_model_options = {
