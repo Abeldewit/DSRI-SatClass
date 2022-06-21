@@ -76,7 +76,7 @@ def create_model(model_name, args):
 
 def create_trainer(hparams):
     early_stopping = EarlyStopping(
-        monitor="Loss/val_epoch", 
+        monitor="Loss/val", 
         mode="max", 
         patience=hparams.patience,
         check_on_train_epoch_end=False,)
