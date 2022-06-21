@@ -130,14 +130,14 @@ class LitModule(pl.LightningModule):
         return loss
 
     def validation_step(self, val_batch, batch_idx):
-        inputs, labels, times = val_batch
-        outputs = self(inputs, times)
-        loss = self.loss_fn(outputs, labels.long())
+        vinputs, vlabels, vtimes = val_batch
+        voutputs = self(vinputs, vtimes)
+        vloss = self.loss_fn(voutputs, vlabels.long())
 
         # Log metrics
-        self.log_metrics(outputs, labels, loss, val=True)
+        self.log_metrics(voutputs, vlabels, vloss, val=True)
 
-        return loss
+        return vloss
 
     def log_metrics(self, outputs, labels, loss, val:bool = False):
         # Train or val metrics
@@ -165,12 +165,16 @@ class LitModule(pl.LightningModule):
 
         # Log metrics
         self.log(f'Loss/{prefix}', loss, prog_bar=True)
-        self.log(f"Performance/{prefix}", {
-            f'{prefix}_acc': acc,
-            f'{prefix}_prec': prec,
-            f'{prefix}_rec': rec,
-            f'{prefix}_f1': f1,
-            f'{prefix}_jaccard': jaccard,
-        }, on_step=True, on_epoch=True)
+        self.log(
+            f"Performance/{prefix}", {
+                f'{prefix}_acc': acc,
+                f'{prefix}_prec': prec,
+                f'{prefix}_rec': rec,
+                f'{prefix}_f1': f1,
+                f'{prefix}_jaccard': jaccard,
+            }, 
+            on_step=False if val else True, 
+            on_epoch=True
+        )
 
 
