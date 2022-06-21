@@ -75,7 +75,11 @@ def create_model(model_name, args):
     return model
 
 def create_trainer(hparams):
-    early_stopping = EarlyStopping(monitor="val_jaccard", mode="max", patience=hparams.patience)
+    early_stopping = EarlyStopping(
+        monitor="val_jaccard", 
+        mode="max", 
+        patience=hparams.patience,
+        check_on_train_epoch_end=False,)
     trainer = pl.Trainer(
         accelerator=hparams.accelerator,
         devices=hparams.devices,
