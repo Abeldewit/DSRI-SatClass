@@ -128,4 +128,11 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
     
-    main(args)
+    try:
+        main(args)
+    except KeyboardInterrupt:
+        print('Interrupted')
+        try:
+            sys.exit(0)
+        except SystemExit:
+            os._exit(0)
