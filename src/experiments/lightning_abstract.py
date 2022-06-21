@@ -128,57 +128,65 @@ class LitModule(pl.LightningModule):
         outputs = self(inputs, times)
         loss = self.loss_fn(outputs, labels.long())
 
+        # Update metrics
+        train_acc = self.accuracy_train(outputs, labels.int())
+        train_prec = self.precision_train(outputs, labels.int())
+        train_rec = self.recall_train(outputs, labels.int())
+        train_f1 = self.f1_train(outputs, labels.int())
+        train_jac = self.jaccard_train(outputs, labels.int())
+
         # Log metrics
-        self.log_metrics(outputs, labels, loss, val=False)
+        self.log(f'Loss/train', loss, prog_bar=True)
+        self.log(
+            f"Performance/train", {
+                'train_acc': train_acc,
+                'train_prec': train_prec,
+                'train_rec': train_rec,
+                'train_f1': train_f1,
+                'train_jaccard': train_jac,
+            }
+        )
 
         return loss
+
+    def on_train_epoch_end(self):
+        self.accuracy_train.reset()
+        self.precision_train.reset()
+        self.recall_train.reset()
+        self.f1_train.reset()
+        self.jaccard_train.reset()
 
     def validation_step(self, val_batch, batch_idx):
         vinputs, vlabels, vtimes = val_batch
         voutputs = self(vinputs, vtimes)
         vloss = self.loss_fn(voutputs, vlabels.long())
 
-        # Log metrics
-        self.log_metrics(voutputs, vlabels, vloss, val=True)
+        # Update metrics
+        self.log(f'Loss/val', vloss, prog_bar=True)
+        self.accuracy_val.update(voutputs, vlabels.int())
+        self.precision_val.update(voutputs, vlabels.int())
+        self.recall_val.update(voutputs, vlabels.int())
+        self.f1_val.update(voutputs, vlabels.int())
+        self.jaccard_val.update(voutputs, vlabels.int())
 
         return vloss
 
-    def log_metrics(self, outputs, labels, loss, val:bool = False):
-        # Train or val metrics
-        if not val:
-            acc = self.accuracy_train
-            prec = self.precision_train
-            rec = self.recall_train
-            f1 = self.f1_train
-            jaccard = self.jaccard_train
-            prefix='train'
-        else:
-            acc = self.accuracy_val
-            prec = self.precision_val
-            rec = self.recall_val
-            f1 = self.f1_val
-            jaccard = self.jaccard_val
-            prefix='val'
-        
-        # Update metrics
-        acc(outputs, labels.int())
-        prec(outputs, labels.int())
-        rec(outputs, labels.int())
-        f1(outputs, labels.int())
-        jaccard(outputs, labels.int())
-
-        # Log metrics
-        self.log(f'Loss/{prefix}', loss, prog_bar=True)
+    def on_validation_epoch_end(self):
         self.log(
-            f"Performance/{prefix}", {
-                f'{prefix}_acc': acc,
-                f'{prefix}_prec': prec,
-                f'{prefix}_rec': rec,
-                f'{prefix}_f1': f1,
-                f'{prefix}_jaccard': jaccard,
-            }, 
-            on_step=False if val else True, 
-            on_epoch=True
+            f"Performance/val", {
+                'val_acc': self.accuracy_val.compute(),
+                'val_prec': self.precision_val.compute(),
+                'val_rec': self.recall_val.compute(),
+                'val_f1': self.f1_val.compute(),
+                'val_jaccard': self.jaccard_val.compute(),
+            }
         )
+
+        self.accuracy_val.reset()
+        self.precision_val.reset()
+        self.recall_val.reset()
+        self.f1_val.reset()
+        self.jaccard_val.reset()
+
 
 
