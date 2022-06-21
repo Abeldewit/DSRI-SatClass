@@ -79,16 +79,19 @@ def create_model(model_name, args):
 
 def create_trainer(hparams, exp):
     early_stopping = EarlyStopping(
-        monitor="Loss/val", 
+        monitor="val/loss", 
         mode="max", 
         patience=hparams.patience,
-        check_on_train_epoch_end=False,)
+        check_on_train_epoch_end=False,
+        verbose=True,
+        strics=False,
+    )
 
     neptune_logger = NeptuneLogger(
         project="abeldewit/sat-class",
         api_key="eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkiLCJhcGlfdXJsIjoiaHR0cHM6Ly9hcHAubmVwdHVuZS5haSIsImFwaV9rZXkiOiJiMmVlMDg0Ny0yZDI4LTQxYTUtYjU4MC02MGQ0MGIxYWM2NzEifQ==",
         log_model_checkpoints=False,
-        run=exp,
+        name=exp,
     )
 
     neptune_logger.log_hyperparams(
