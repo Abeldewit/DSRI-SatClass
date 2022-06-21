@@ -181,11 +181,11 @@ class LitModule(pl.LightningModule):
         
         self.logger.experiment["val/loss"] = loss.mean()
         self.log("metrics/val/loss", loss.mean(), prog_bar=True)
-        self.logger.experiment["metrics/batch/acc"] = self.accuracy_val.compute()
-        self.logger.experiment["metrics/batch/precision"] = self.precision_val.compute()
-        self.logger.experiment["metrics/batch/recall"] = self.recall_val.compute()
-        self.logger.experiment["metrics/batch/f1"] = self.f1_val.compute()
-        self.logger.experiment["metrics/batch/jaccard"] = self.jaccard_val.compute()
+        self.log("metrics/val/acc", self.accuracy_val.compute())
+        self.log("metrics/val/precision", self.precision_val.compute())
+        self.log("metrics/val/recall", self.recall_val.compute())
+        self.log("metrics/val/f1", self.f1_val.compute())
+        self.log("metrics/val/jaccard", self.jaccard_val.compute())
         
         self.accuracy_val.reset()
         self.precision_val.reset()
