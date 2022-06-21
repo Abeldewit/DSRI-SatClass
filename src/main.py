@@ -3,6 +3,9 @@ import pytorch_lightning as pl
 import sys, os
 import getopt
 from argparse import ArgumentParser
+from pytorch_lightning.callbacks.early_stopping import EarlyStopping
+import json
+from pyifttt.webhook import send_notification
 
 sys.path.insert(0, os.getcwd())
 from src.backbones.UNet.unet import UNet
@@ -12,9 +15,6 @@ from src.backbones.Vit.model.decoder import MaskTransformer
 from src.backbones.Vit.model.segmenter import Segmenter
 from src.experiments.lightning_abstract import LitModule
 del sys.path[0]
-import json
-
-from pyifttt.webhook import send_notification
 
 
 def read_experiments():
@@ -75,10 +75,12 @@ def create_model(model_name, args):
     return model
 
 def create_trainer(hparams):
+    early_stopping = EarlyStopping(montor="val_jaccard", mode="max", patience=hparams.patience)
     trainer = pl.Trainer(
         accelerator=hparams.accelerator,
         devices=hparams.devices,
         max_epochs=hparams.epochs,
+        callbacks=[early_stopping],
     )
     return trainer
 
@@ -114,6 +116,7 @@ if __name__ == "__main__":
     parser.add_argument('--devices', type=int, default=1)
     parser.add_argument('--num_workers', type=int, default=0)
     parser.add_argument('--path', type=str, default='/workspace/persistent/data/PASTIS')
+    parser.add_argument('--patience', type=int, default=10)
     
     args = parser.parse_args()
     
