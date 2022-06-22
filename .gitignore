@@ -6,3 +6,7 @@ runs/*
 *.DS_Store
 .vscode/*
 *.md5
+events.out.*
+logs/*
+data_loader_tester
+model_tester
