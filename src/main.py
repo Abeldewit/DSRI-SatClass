@@ -26,9 +26,9 @@ def read_experiments():
         experiments = json.load(f)
     return experiments
 
-def experiment_generator():
+def experiment_generator(begin=None, end=None):
     experiments = read_experiments()
-    for exp, args in list(experiments.items()):
+    for exp, args in list(experiments.items())[begin:end]:
         print(f'\n\n** Running: {exp} **')
         print('-'*27)
         # Get the arguments
@@ -113,7 +113,7 @@ def create_trainer(hparams, exp):
 
 
 def main(hparams):
-    experiment_iter = experiment_generator()
+    experiment_iter = experiment_generator(hparams.begin, hparams.end)
 
     for exp, args, data_args in experiment_iter:
         # Create the model
@@ -150,6 +150,8 @@ if __name__ == "__main__":
     parser.add_argument('--path', type=str, default='/workspace/persistent/data/PASTIS')
     parser.add_argument('--patience', type=int, default=10)
     parser.add_argument('--learning_rate', type=float, default=0.05)
+    parser.add_argument('--begin', type=int, default=0)
+    parser.add_argument('--end', type=int, default=None)
     
     args = parser.parse_args()
     
