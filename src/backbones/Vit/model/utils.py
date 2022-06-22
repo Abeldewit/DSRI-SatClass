@@ -34,7 +34,7 @@ def resize_pos_embed(posemb, grid_old_shape, grid_new_shape, num_extra_tokens):
 
     gs_h, gs_w = grid_new_shape
     posemb_grid = posemb_grid.reshape(1, gs_old_h, gs_old_w, -1).permute(0, 3, 1, 2)
-    posemb_grid = F.interpolate(posemb_grid, size=(gs_h, gs_w), mode="bilinear")
+    posemb_grid = F.interpolate(posemb_grid, size=(gs_h, gs_w), mode="bilinear", align_corners=True)
     posemb_grid = posemb_grid.permute(0, 2, 3, 1).reshape(1, gs_h * gs_w, -1)
     posemb = torch.cat([posemb_tok, posemb_grid], dim=1)
     return posemb
@@ -98,7 +98,7 @@ def resize(im, smaller_size):
         ratio = h / w
         h_res, w_res = ratio * smaller_size, smaller_size
     if min(h, w) < smaller_size:
-        im_res = F.interpolate(im, (int(h_res), int(w_res)), mode="bilinear")
+        im_res = F.interpolate(im, (int(h_res), int(w_res)), mode="bilinear", align_corners=True)
     else:
         im_res = im
     return im_res
@@ -141,6 +141,7 @@ def merge_windows(windows, window_size, ori_shape):
         logit.unsqueeze(0),
         ori_shape,
         mode="bilinear",
+        align_corners=True,
     )[0]
     if flip:
         logit = torch.flip(logit, (2,))
