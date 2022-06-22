@@ -32,6 +32,7 @@ class LitModule(pl.LightningModule):
         self.learning_rate = learning_rate
         self.batch_size = batch_size
         self.loss_fn = loss_function
+        self.create_metrics()
 
         self.standard_args = {
             'data_files': 'DATA_S2',
@@ -41,24 +42,33 @@ class LitModule(pl.LightningModule):
 
         self.data_args = data_args
 
-        # Training metrics
-        self.precision_train = Precision(num_classes=20, average='macro', mdmc_average='samplewise')
-        self.recall_train = Recall(num_classes=20, average='macro', mdmc_average='samplewise')
-        self.accuracy_train = Accuracy(num_classes=20, average='weighted', mdmc_average='samplewise')
-        self.f1_train = F1Score(num_classes=20, average='macro', mdmc_average='samplewise')
-        self.jaccard_train = JaccardIndex(num_classes=20, average='weighted', mdmc_average='samplewise')
-
-        # Validation metrics
-        self.precision_val = Precision(num_classes=20, average='macro', mdmc_average='samplewise')
-        self.recall_val = Recall(num_classes=20, average='macro', mdmc_average='samplewise')
-        self.accuracy_val = Accuracy(num_classes=20, average='weighted', mdmc_average='samplewise')
-        self.f1_val = F1Score(num_classes=20, average='macro', mdmc_average='samplewise')
-        self.jaccard_val = JaccardIndex(num_classes=20, average='weighted', mdmc_average='samplewise')
-
         self.best_vloss = float('inf')
         self.save_dir = save_dir
         
         self.model = model
+        
+
+    def create_metrics(self):
+        # Training metrics
+        self._precision_train = Precision(num_classes=20, average='macro', mdmc_average='samplewise')
+        self._recall_train = Recall(num_classes=20, average='macro', mdmc_average='samplewise')
+        self._accuracy_train = Accuracy(num_classes=20, average='weighted', mdmc_average='samplewise')
+        self._f1_train = F1Score(num_classes=20, average='macro', mdmc_average='samplewise')
+        self._jaccard_train = JaccardIndex(num_classes=20, average='weighted', mdmc_average='samplewise')
+
+        # Validation metrics
+        self._precision_val = Precision(num_classes=20, average='macro', mdmc_average='samplewise')
+        self._recall_val = Recall(num_classes=20, average='macro', mdmc_average='samplewise')
+        self._accuracy_val = Accuracy(num_classes=20, average='weighted', mdmc_average='samplewise')
+        self._f1_val = F1Score(num_classes=20, average='macro', mdmc_average='samplewise')
+        self._jaccard_val = JaccardIndex(num_classes=20, average='weighted', mdmc_average='samplewise')
+
+        # Test metrics
+        self._precision_test = Precision(num_classes=20, average='macro', mdmc_average='samplewise')
+        self._recall_test = Recall(num_classes=20, average='macro', mdmc_average='samplewise')
+        self._accuracy_test = Accuracy(num_classes=20, average='weighted', mdmc_average='samplewise')
+        self._f1_test = F1Score(num_classes=20, average='macro', mdmc_average='samplewise')
+        self._jaccard_test = JaccardIndex(num_classes=20, average='weighted', mdmc_average='samplewise')
 
     def forward(self, x, times=None):
         if isinstance(self.model, UTAE):
@@ -104,6 +114,22 @@ class LitModule(pl.LightningModule):
         )
         return val_loader
 
+    def test_dataloader(self):
+        test_set = PASTIS(
+            **self.standard_args, 
+            **self.data_args, 
+            subset_type='test'
+        )
+        test_loader = DataLoader(
+            test_set,
+            batch_size=self.batch_size,
+            shuffle=False,
+            num_workers=self.num_workers,
+            pin_memory=True,
+            prefetch_factor=2
+        )
+        return test_loader
+
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
         self.optimizer = optimizer
@@ -136,11 +162,11 @@ class LitModule(pl.LightningModule):
         self.log("metrics/batch/loss", loss, prog_bar=False)
 
         # Update metrics
-        accuracy = self.accuracy_train(outputs, labels.int())
-        precision = self.precision_train(outputs, labels.int())
-        recall = self.recall_train(outputs, labels.int())
-        f1 = self.f1_train(outputs, labels.int())
-        jaccard = self.jaccard_train(outputs, labels.int())
+        accuracy = self._accuracy_train(outputs, labels.int())
+        precision = self._precision_train(outputs, labels.int())
+        recall = self._recall_train(outputs, labels.int())
+        f1 = self._f1_train(outputs, labels.int())
+        jaccard = self._jaccard_train(outputs, labels.int())
 
         # Log metrics
         self.log("metrics/batch/acc", accuracy)
@@ -157,11 +183,11 @@ class LitModule(pl.LightningModule):
         vloss = self.loss_fn(voutputs, vlabels.long())
 
         # Update metrics
-        self.accuracy_val(voutputs, vlabels.int())
-        self.precision_val(voutputs, vlabels.int())
-        self.recall_val(voutputs, vlabels.int())
-        self.f1_val(voutputs, vlabels.int())
-        self.jaccard_val(voutputs, vlabels.int())
+        self._accuracy_val(voutputs, vlabels.int())
+        self._precision_val(voutputs, vlabels.int())
+        self._recall_val(voutputs, vlabels.int())
+        self._f1_val(voutputs, vlabels.int())
+        self._jaccard_val(voutputs, vlabels.int())
 
         # Save model if validation loss is lower
         if vloss < self.best_vloss:
@@ -181,17 +207,36 @@ class LitModule(pl.LightningModule):
         
         self.logger.experiment["val/loss"] = loss.mean()
         self.log("metrics/val/loss", loss.mean(), prog_bar=True)
-        self.log("metrics/val/acc", self.accuracy_val.compute())
-        self.log("metrics/val/precision", self.precision_val.compute())
-        self.log("metrics/val/recall", self.recall_val.compute())
-        self.log("metrics/val/f1", self.f1_val.compute())
-        self.log("metrics/val/jaccard", self.jaccard_val.compute())
+        self.log("metrics/val/acc", self._accuracy_val.compute())
+        self.log("metrics/val/precision", self._precision_val.compute())
+        self.log("metrics/val/recall", self._recall_val.compute())
+        self.log("metrics/val/f1", self._f1_val.compute())
+        self.log("metrics/val/jaccard", self._jaccard_val.compute())
         
-        self.accuracy_val.reset()
-        self.precision_val.reset()
-        self.recall_val.reset()
-        self.f1_val.reset()
-        self.jaccard_val.reset()
+        self._accuracy_val.reset()
+        self._precision_val.reset()
+        self._recall_val.reset()
+        self._f1_val.reset()
+        self._jaccard_val.reset()
+
+    def test_step(self, test_batch, batch_idx):
+        self.model.eval()
+        tinputs, tlabels, ttimes = test_batch
+        toutputs = self(tinputs, ttimes)
+
+        # Update metrics
+        self._accuracy_test(toutputs, tlabels.int())
+        self._precision_test(toutputs, tlabels.int())
+        self._recall_test(toutputs, tlabels.int())
+        self._f1_test(toutputs, tlabels.int())
+        self._jaccard_test(toutputs, tlabels.int())
+
+    def on_test_epoch_end(self) -> None:
+        self.log("metrics/test/acc", self._accuracy_test.compute())
+        self.log("metrics/test/precision", self._precision_test.compute())
+        self.log("metrics/test/recall", self._recall_test.compute())
+        self.log("metrics/test/f1", self._f1_test.compute())
+        self.log("metrics/test/jaccard", self._jaccard_test.compute())
 
     def save_model(self, loss):
         model_name = str(type(self.model)).split('.')[2]

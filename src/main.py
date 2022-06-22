@@ -7,7 +7,7 @@ from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 import json
 from pyifttt.webhook import send_notification
 
-from pytorch_lightning.loggers import NeptuneLogger
+from pytorch_lightning.loggers import NeptuneLogger, TensorBoardLogger
 
 
 sys.path.insert(0, os.getcwd())
@@ -86,28 +86,32 @@ def create_trainer(hparams, exp):
         verbose=True,
         strict=False,
     )
-
-    neptune_logger = NeptuneLogger(
-        project="abeldewit/sat-class",
-        api_key="eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkiLCJhcGlfdXJsIjoiaHR0cHM6Ly9hcHAubmVwdHVuZS5haSIsImFwaV9rZXkiOiJiMmVlMDg0Ny0yZDI4LTQxYTUtYjU4MC02MGQ0MGIxYWM2NzEifQ==",
-        log_model_checkpoints=False,
-        name=exp,
-    )
-
-    neptune_logger.log_hyperparams(
-        {
-            'max_epochs': hparams.epochs,
-            'early_stopping_patience': hparams.patience,
-            'learning_rate': hparams.learning_rate,
-        }
-    )
+    if hparams.logger == 'neptune':
+        logger = NeptuneLogger(
+            project="abeldewit/sat-class",
+            api_key="eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkiLCJhcGlfdXJsIjoiaHR0cHM6Ly9hcHAubmVwdHVuZS5haSIsImFwaV9rZXkiOiJiMmVlMDg0Ny0yZDI4LTQxYTUtYjU4MC02MGQ0MGIxYWM2NzEifQ==",
+            log_model_checkpoints=False,
+            name=exp,
+        )
+        logger.log_hyperparams(
+            {
+                'max_epochs': hparams.epochs,
+                'early_stopping_patience': hparams.patience,
+                'learning_rate': hparams.learning_rate,
+            }
+        )
+    elif hparams.logger == 'tensorboard':
+        logger = TensorBoardLogger('./logs', prefix=exp)
+    else:
+        logger = None
 
     trainer = pl.Trainer(
         accelerator=hparams.accelerator,
         devices=hparams.devices,
         max_epochs=hparams.epochs,
         callbacks=[early_stopping],
-        logger=neptune_logger,
+        logger=logger,
+        fast_dev_run=hparams.fast_dev,
     )
     return trainer
 
@@ -118,13 +122,15 @@ def main(hparams):
     for exp, args, data_args in experiment_iter:
         # Create the model
         model = create_model(args['model'], args)
+
+        batch_size = hparams.batch_size if hparams.batch_size else args['batch_size']
         
         # Create lightning module
         lightning_module = LitModule(
             model=model,
             data_args=data_args,
             path=hparams.path,
-            batch_size=args['batch_size'],
+            batch_size=batch_size,
             num_workers=hparams.num_workers,
             learning_rate=hparams.learning_rate,
         )
@@ -132,12 +138,11 @@ def main(hparams):
         # Create the trainer
         trainer = create_trainer(hparams, exp)
 
-        #TODO: Remove
-        # Test validation
-        # trainer.validate(lightning_module)
-
         # Run the experiment
         trainer.fit(lightning_module)
+
+        # Test the model
+        trainer.test(lightning_module)
 
 
 
@@ -150,8 +155,11 @@ if __name__ == "__main__":
     parser.add_argument('--path', type=str, default='/workspace/persistent/data/PASTIS')
     parser.add_argument('--patience', type=int, default=10)
     parser.add_argument('--learning_rate', type=float, default=0.05)
+    parser.add_argument('--fast_dev', default=False)
+    parser.add_argument('--logger', type=str, default='neptune')
     parser.add_argument('--begin', type=int, default=0)
     parser.add_argument('--end', type=int, default=None)
+    parser.add_argument('--batch_size', type=int, default=None)
     
     args = parser.parse_args()
     
