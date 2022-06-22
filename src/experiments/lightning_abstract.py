@@ -205,7 +205,7 @@ class LitModule(pl.LightningModule):
         for results_dict in outputs:
             loss = np.append(loss, results_dict["loss"])
         
-        self.logger.experiment["val/loss"] = loss.mean()
+        # self.logger.experiment["val/loss"] = loss.mean()
         self.log("metrics/val/loss", loss.mean(), prog_bar=True)
         self.log("metrics/val/acc", self._accuracy_val.compute())
         self.log("metrics/val/precision", self._precision_val.compute())

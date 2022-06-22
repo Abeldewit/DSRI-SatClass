@@ -82,6 +82,7 @@ def create_trainer(hparams, exp):
         monitor="metrics/val/loss", 
         mode="min", 
         patience=hparams.patience,
+        min_delta=hparams.min_delta,
         check_on_train_epoch_end=False,
         verbose=True,
         strict=False,
@@ -160,6 +161,7 @@ if __name__ == "__main__":
     parser.add_argument('--begin', type=int, default=0)
     parser.add_argument('--end', type=int, default=None)
     parser.add_argument('--batch_size', type=int, default=None)
+    parser.add_argument('--min_delta', type=float, default=0.0)
     
     args = parser.parse_args()
     
