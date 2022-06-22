@@ -136,7 +136,7 @@ class LitModule(pl.LightningModule):
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
             optimizer,
             mode='min',
-            factor=0.1,
+            factor=0.5,
             patience=5,
             verbose=True,
             threshold=1e-4,
