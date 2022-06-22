@@ -26,13 +26,19 @@ def read_experiments():
         experiments = json.load(f)
     return experiments
 
-def experiment_generator(begin=None, end=None):
+def experiment_generator(hparams):
+    begin = hparams.begin
+    end = hparams.end
+    model_only=hparams.model_only
+
     experiments = read_experiments()
     for exp, args in list(experiments.items())[begin:end]:
+        model_name = args['model']
+        if model_only and model_name != model_only:
+            continue
         print(f'\n\n** Running: {exp} **')
         print('-'*27)
         # Get the arguments
-        model_name = args['model']
         batch_size = args['batch_size']
         print(f'Model: {model_name}')
 
@@ -118,7 +124,7 @@ def create_trainer(hparams, exp):
 
 
 def main(hparams):
-    experiment_iter = experiment_generator(hparams.begin, hparams.end)
+    experiment_iter = experiment_generator(hparams)
 
     for exp, args, data_args in experiment_iter:
         # Create the model
@@ -162,6 +168,7 @@ if __name__ == "__main__":
     parser.add_argument('--end', type=int, default=None)
     parser.add_argument('--batch_size', type=int, default=None)
     parser.add_argument('--min_delta', type=float, default=0.0)
+    parser.add_argument('--model_only', type=str, default='')
     
     args = parser.parse_args()
     
