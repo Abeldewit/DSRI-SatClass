@@ -93,7 +93,7 @@ class LitModule(pl.LightningModule):
                 self.logger.experiment.add_histogram(name, param, global_step)
                 if param.requires_grad:
                     if param.grad is not None:
-                    self.logger.experiment.add_histogram(f"{name}_grad", param.grad, global_step)
+                        self.logger.experiment.add_histogram(f"{name}_grad", param.grad, global_step)
 
     def train_dataloader(self):
         train_set = PASTIS(
