@@ -4,6 +4,7 @@ import os, sys
 from torch.utils.data import DataLoader
 from torchmetrics.classification import Accuracy, Precision, Recall, F1Score, JaccardIndex
 import numpy as np
+from pytorch_lightning.loggers import NeptuneLogger, TensorBoardLogger
 
 root_dir = os.path.abspath(os.getcwd())
 sys.path.insert(0, root_dir)
@@ -86,16 +87,13 @@ class LitModule(pl.LightningModule):
         self.log('lr', optimizer.param_groups[0]['lr'], prog_bar=True)
 
     def on_after_backward(self):
-        global_step = self.global_step
-        for name, param in self.model.named_parameters():
-            self.logger.experiment.add_histogram(name, param, global_step)
-            if param.requires_grad:
-                if param.grad is not None:
+        if self.logger == TensorBoardLogger:
+            global_step = self.global_step
+            for name, param in self.model.named_parameters():
+                self.logger.experiment.add_histogram(name, param, global_step)
+                if param.requires_grad:
+                    if param.grad is not None:
                     self.logger.experiment.add_histogram(f"{name}_grad", param.grad, global_step)
-
-        
-
-        
 
     def train_dataloader(self):
         train_set = PASTIS(
