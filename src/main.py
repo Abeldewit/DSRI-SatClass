@@ -85,7 +85,7 @@ def create_model(model_name, args):
 
 def create_trainer(hparams, exp):
     early_stopping = EarlyStopping(
-        monitor="metrics/val/loss", 
+        monitor=hparams.monitor, 
         mode="min", 
         patience=hparams.patience,
         min_delta=hparams.min_delta,
@@ -119,6 +119,8 @@ def create_trainer(hparams, exp):
         callbacks=[early_stopping],
         logger=logger,
         fast_dev_run=hparams.fast_dev,
+        log_every_n_steps=hparams.log_every_n_steps,
+        overfit_batches=hparams.overfit_batches,
     )
     return trainer
 
@@ -140,10 +142,14 @@ def main(hparams):
             batch_size=batch_size,
             num_workers=hparams.num_workers,
             learning_rate=hparams.learning_rate,
+            hparams=hparams,
         )
 
         # Create the trainer
         trainer = create_trainer(hparams, exp)
+
+        # sample_img = torch.rand((1, 3, 128, 128))
+        # trainer.logger.experiment.add_graph(lightning_module.model, sample_img)
 
         # Run the experiment
         trainer.fit(lightning_module)
@@ -169,6 +175,9 @@ if __name__ == "__main__":
     parser.add_argument('--batch_size', type=int, default=None)
     parser.add_argument('--min_delta', type=float, default=0.0)
     parser.add_argument('--model_only', type=str, default='')
+    parser.add_argument('--log_every_n_steps', type=int, default=50)
+    parser.add_argument('--overfit_batches', type=int, default=0)
+    parser.add_argument('--monitor', type=str, default='metrics/val/loss')
     
     args = parser.parse_args()
     

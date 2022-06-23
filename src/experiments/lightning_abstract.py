@@ -26,12 +26,14 @@ class LitModule(pl.LightningModule):
         learning_rate=0.05,
         loss_function = torch.nn.CrossEntropyLoss(label_smoothing=.1),
         save_dir = './models/',
+        hparams=None,
     ):
         super().__init__()
         self.num_workers = num_workers
         self.learning_rate = learning_rate
         self.batch_size = batch_size
         self.loss_fn = loss_function
+        self.user_params = hparams
         self.create_metrics()
 
         self.standard_args = {
@@ -80,7 +82,20 @@ class LitModule(pl.LightningModule):
         loss.backward()
         optimizer.step()
         optimizer.zero_grad()
+
         self.log('lr', optimizer.param_groups[0]['lr'], prog_bar=True)
+
+    def on_after_backward(self):
+        global_step = self.global_step
+        for name, param in self.model.named_parameters():
+            self.logger.experiment.add_histogram(name, param, global_step)
+            if param.requires_grad:
+                if param.grad is not None:
+                    self.logger.experiment.add_histogram(f"{name}_grad", param.grad, global_step)
+
+        
+
+        
 
     def train_dataloader(self):
         train_set = PASTIS(
@@ -148,13 +163,14 @@ class LitModule(pl.LightningModule):
         lr_scheduler_config = {
             "scheduler": scheduler,
             "interval": "epoch",
-            "monitor": "metrics/val/loss",
+            "monitor": self.user_params.monitor,
             "strict": False,
             "name": None,
         }
 
         return {'optimizer': optimizer, 'lr_scheduler': lr_scheduler_config}
-
+    
+    
     def training_step(self, train_batch, batch_idx):
         inputs, labels, times = train_batch
         outputs = self(inputs, times)

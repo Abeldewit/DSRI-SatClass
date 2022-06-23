@@ -3,10 +3,14 @@ import itertools
 import os
 
 experiment_options = {
-    'model': ('UNet', 'UTAE', 'ViT'),
+    'model': (
+        'UNet',
+        'UTAE', 
+        'ViT'
+    ),
     'rgb_only': ('rgb', 'spec'), 
     'multi_temporal': ('temp', 'no_temp'),
-    'fold': (1,),
+    'fold': (1,2,3,4,5),
 }
 
 data_options = {
@@ -46,23 +50,23 @@ standard_model_options = {
     'ViT': {
         'encoder': {
             'image_size': (128,128),
-            'patch_size': 16,
-            'n_layers': 12,
-            'd_model': 192,
-            'd_ff': 192,
-            'n_heads': 4,
+            'patch_size': 8,
+            'n_layers': 4,
+            'd_model': 256,
+            'd_ff': 256,
+            'n_heads': 16,
             'n_cls': 20
         },
         'decoder': {
             'n_cls': 20,
-            'patch_size': 16,
-            'd_encoder': 192,
-            'n_layers': 12,
-            'd_model': 192,
-            'd_ff': 192,
-            'drop_path_rate': 0.,
+            'patch_size': 8,
+            'd_encoder': 256,
+            'n_layers': 4,
+            'd_model': 512,
+            'd_ff': 256,
+            'drop_path_rate': 0.1,
             'dropout': 0.1,
-            'n_heads': 4,
+            'n_heads': 8,
         },
         'segmenter': {'n_cls': 20}
     }
