@@ -128,34 +128,42 @@ def create_trainer(hparams, exp):
 def main(hparams):
     experiment_iter = experiment_generator(hparams)
 
-    for exp, args, data_args in experiment_iter:
-        # Create the model
-        model = create_model(args['model'], args)
+    try:
+        for exp, args, data_args in experiment_iter:
+            # Create the model
+            model = create_model(args['model'], args)
 
-        batch_size = hparams.batch_size if hparams.batch_size else args['batch_size']
-        
-        # Create lightning module
-        lightning_module = LitModule(
-            model=model,
-            data_args=data_args,
-            path=hparams.path,
-            batch_size=batch_size,
-            num_workers=hparams.num_workers,
-            learning_rate=hparams.learning_rate,
-            hparams=hparams,
-        )
+            batch_size = hparams.batch_size if hparams.batch_size else args['batch_size']
+            
+            # Create lightning module
+            lightning_module = LitModule(
+                model=model,
+                data_args=data_args,
+                path=hparams.path,
+                batch_size=batch_size,
+                num_workers=hparams.num_workers,
+                learning_rate=hparams.learning_rate,
+                hparams=hparams,
+            )
 
-        # Create the trainer
-        trainer = create_trainer(hparams, exp)
+            # Create the trainer
+            trainer = create_trainer(hparams, exp)
 
-        # sample_img = torch.rand((1, 3, 128, 128))
-        # trainer.logger.experiment.add_graph(lightning_module.model, sample_img)
+            # sample_img = torch.rand((1, 3, 128, 128))
+            # trainer.logger.experiment.add_graph(lightning_module.model, sample_img)
 
-        # Run the experiment
-        trainer.fit(lightning_module)
+            # Run the experiment
+            trainer.fit(lightning_module)
 
-        # Test the model
-        trainer.test(lightning_module)
+            # Test the model
+            trainer.test(lightning_module)
+            
+    except KeyboardInterrupt:
+        print('Interrupted')
+        try:
+            sys.exit(0)
+        except SystemExit:
+            os._exit(0)
 
 
 
@@ -181,11 +189,5 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
     
-    try:
-        main(args)
-    except KeyboardInterrupt:
-        print('Interrupted')
-        try:
-            sys.exit(0)
-        except SystemExit:
-            os._exit(0)
+    main(args)
+
