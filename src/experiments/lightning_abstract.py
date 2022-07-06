@@ -20,7 +20,8 @@ from src.backbones.Vit.model.decoder import MaskTransformer
 from src.backbones.Vit.model.segmenter import Segmenter
 from src.backbones.Vit.model.pretrained_segmenter import PreSegmenter
 from src.utilities.dataloader import PASTIS
-from src.utilities.diceloss import DiceLoss
+# from src.utilities.diceloss import DiceLoss
+from segmentation_models_pytorch.losses import DiceLoss
 del sys.path[0]
 
 class LitModule(pl.LightningModule):
@@ -33,7 +34,7 @@ class LitModule(pl.LightningModule):
         batch_size=4,
         learning_rate=0.05,
         # loss_function = torch.nn.CrossEntropyLoss(label_smoothing=.1),
-        loss_function = DiceLoss(),
+        loss_function = None,
         save_dir = './models/',
         hparams=None,
     ):
@@ -42,7 +43,9 @@ class LitModule(pl.LightningModule):
         self.num_workers = num_workers
         self.learning_rate = learning_rate
         self.batch_size = batch_size
-        self.loss_fn = loss_function
+        self.loss_fn = DiceLoss(
+            mode='multiclass',
+        ) if loss_function is None else loss_function
         self.user_params = hparams
         self.create_metrics()
 
