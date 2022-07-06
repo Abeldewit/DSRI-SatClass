@@ -110,6 +110,7 @@ class LitModule(pl.LightningModule):
             **self.data_args, 
             subset_type='train',
             shuffle=True,
+            norm=self.user_params.norm
         )
         train_loader = DataLoader(
             train_set,
@@ -125,7 +126,8 @@ class LitModule(pl.LightningModule):
         val_set = PASTIS(
             **self.standard_args, 
             **self.data_args, 
-            subset_type='val'
+            subset_type='val',
+            norm=self.user_params.norm,
         )
         val_loader = DataLoader(
             val_set,

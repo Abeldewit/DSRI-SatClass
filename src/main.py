@@ -50,6 +50,7 @@ def experiment_generator(hparams):
         data_options = {
             'rgb_only': args['rgb_only'],
             'multi_temporal': args['multi_temporal'],
+            'remove_clouds': args['remove_clouds'],
             'fold': args['fold'],
         }
 
