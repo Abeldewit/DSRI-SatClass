@@ -3,6 +3,7 @@
         "model": "UNet",
         "rgb_only": true,
         "multi_temporal": false,
+        "remove_clouds": false,
         "batch_size": 128,
         "fold": 1,
         "standard_arguments": {
@@ -12,11 +13,9 @@
             "enc_channels": [
                 3,
                 64,
-                128,
-                256,
-                512
+                128
             ],
-            "bottleneck": 1024,
+            "bottleneck": 512,
             "num_classes": 20
         }
     },
@@ -24,8 +23,9 @@
         "model": "UNet",
         "rgb_only": true,
         "multi_temporal": false,
+        "remove_clouds": true,
         "batch_size": 128,
-        "fold": 2,
+        "fold": 1,
         "standard_arguments": {
             "num_classes": 20
         },
@@ -33,979 +33,369 @@
             "enc_channels": [
                 3,
                 64,
-                128,
-                256,
-                512
+                128
             ],
-            "bottleneck": 1024,
+            "bottleneck": 512,
             "num_classes": 20
         }
     },
     "Experiment 3": {
         "model": "UNet",
-        "rgb_only": true,
+        "rgb_only": false,
         "multi_temporal": false,
+        "remove_clouds": false,
         "batch_size": 128,
-        "fold": 3,
+        "fold": 1,
         "standard_arguments": {
             "num_classes": 20
         },
         "special_arguments": {
             "enc_channels": [
-                3,
+                10,
                 64,
-                128,
-                256,
-                512
+                128
             ],
-            "bottleneck": 1024,
+            "bottleneck": 512,
             "num_classes": 20
         }
     },
     "Experiment 4": {
         "model": "UNet",
-        "rgb_only": true,
+        "rgb_only": false,
         "multi_temporal": false,
+        "remove_clouds": true,
         "batch_size": 128,
-        "fold": 4,
+        "fold": 1,
         "standard_arguments": {
             "num_classes": 20
         },
         "special_arguments": {
             "enc_channels": [
-                3,
+                10,
                 64,
-                128,
-                256,
-                512
+                128
             ],
-            "bottleneck": 1024,
+            "bottleneck": 512,
             "num_classes": 20
         }
     },
     "Experiment 5": {
-        "model": "UNet",
+        "model": "UTAE",
         "rgb_only": true,
-        "multi_temporal": false,
-        "batch_size": 128,
-        "fold": 5,
+        "multi_temporal": true,
+        "remove_clouds": false,
+        "batch_size": 4,
+        "fold": 1,
         "standard_arguments": {
-            "num_classes": 20
+            "encoder_widths": [
+                64,
+                64,
+                64,
+                128
+            ],
+            "decoder_widths": [
+                32,
+                32,
+                64,
+                128
+            ],
+            "out_conv": [
+                32,
+                20
+            ],
+            "str_conv_k": 4,
+            "str_conv_s": 2,
+            "str_conv_p": 1,
+            "agg_mode": "att_group",
+            "encoder_norm": "group",
+            "n_head": 16,
+            "d_model": 256,
+            "d_k": 4,
+            "encoder": false,
+            "return_maps": false,
+            "pad_value": 0,
+            "padding_mode": "reflect"
         },
         "special_arguments": {
-            "enc_channels": [
-                3,
-                64,
-                128,
-                256,
-                512
-            ],
-            "bottleneck": 1024,
-            "num_classes": 20
+            "input_dim": 3
         }
     },
     "Experiment 6": {
-        "model": "UNet",
-        "rgb_only": false,
-        "multi_temporal": false,
-        "batch_size": 128,
+        "model": "UTAE",
+        "rgb_only": true,
+        "multi_temporal": true,
+        "remove_clouds": true,
+        "batch_size": 4,
         "fold": 1,
         "standard_arguments": {
-            "num_classes": 20
+            "encoder_widths": [
+                64,
+                64,
+                64,
+                128
+            ],
+            "decoder_widths": [
+                32,
+                32,
+                64,
+                128
+            ],
+            "out_conv": [
+                32,
+                20
+            ],
+            "str_conv_k": 4,
+            "str_conv_s": 2,
+            "str_conv_p": 1,
+            "agg_mode": "att_group",
+            "encoder_norm": "group",
+            "n_head": 16,
+            "d_model": 256,
+            "d_k": 4,
+            "encoder": false,
+            "return_maps": false,
+            "pad_value": 0,
+            "padding_mode": "reflect"
         },
         "special_arguments": {
-            "enc_channels": [
-                10,
-                64,
-                128,
-                256,
-                512
-            ],
-            "bottleneck": 1024,
-            "num_classes": 20
+            "input_dim": 3
         }
     },
     "Experiment 7": {
-        "model": "UNet",
+        "model": "UTAE",
         "rgb_only": false,
-        "multi_temporal": false,
-        "batch_size": 128,
-        "fold": 2,
+        "multi_temporal": true,
+        "remove_clouds": false,
+        "batch_size": 4,
+        "fold": 1,
         "standard_arguments": {
-            "num_classes": 20
+            "encoder_widths": [
+                64,
+                64,
+                64,
+                128
+            ],
+            "decoder_widths": [
+                32,
+                32,
+                64,
+                128
+            ],
+            "out_conv": [
+                32,
+                20
+            ],
+            "str_conv_k": 4,
+            "str_conv_s": 2,
+            "str_conv_p": 1,
+            "agg_mode": "att_group",
+            "encoder_norm": "group",
+            "n_head": 16,
+            "d_model": 256,
+            "d_k": 4,
+            "encoder": false,
+            "return_maps": false,
+            "pad_value": 0,
+            "padding_mode": "reflect"
         },
         "special_arguments": {
-            "enc_channels": [
-                10,
-                64,
-                128,
-                256,
-                512
-            ],
-            "bottleneck": 1024,
-            "num_classes": 20
+            "input_dim": 10
         }
     },
     "Experiment 8": {
-        "model": "UNet",
+        "model": "UTAE",
         "rgb_only": false,
-        "multi_temporal": false,
-        "batch_size": 128,
-        "fold": 3,
+        "multi_temporal": true,
+        "remove_clouds": true,
+        "batch_size": 4,
+        "fold": 1,
         "standard_arguments": {
-            "num_classes": 20
+            "encoder_widths": [
+                64,
+                64,
+                64,
+                128
+            ],
+            "decoder_widths": [
+                32,
+                32,
+                64,
+                128
+            ],
+            "out_conv": [
+                32,
+                20
+            ],
+            "str_conv_k": 4,
+            "str_conv_s": 2,
+            "str_conv_p": 1,
+            "agg_mode": "att_group",
+            "encoder_norm": "group",
+            "n_head": 16,
+            "d_model": 256,
+            "d_k": 4,
+            "encoder": false,
+            "return_maps": false,
+            "pad_value": 0,
+            "padding_mode": "reflect"
         },
         "special_arguments": {
-            "enc_channels": [
-                10,
-                64,
-                128,
-                256,
-                512
-            ],
-            "bottleneck": 1024,
-            "num_classes": 20
+            "input_dim": 10
         }
     },
     "Experiment 9": {
-        "model": "UNet",
-        "rgb_only": false,
+        "model": "PViT",
+        "rgb_only": true,
         "multi_temporal": false,
+        "remove_clouds": false,
         "batch_size": 128,
-        "fold": 4,
+        "fold": 1,
         "standard_arguments": {
-            "num_classes": 20
+            "encoder": {
+                "embedding_dim": 64,
+                "model_dim": 1024,
+                "name": "L_16_imagenet1k"
+            },
+            "decoder": {
+                "n_cls": 20,
+                "patch_size": 16,
+                "d_encoder": 1024,
+                "n_layers": 8,
+                "d_model": 1024,
+                "d_ff": 512,
+                "drop_path_rate": 0.0,
+                "dropout": 0.1,
+                "n_heads": 8
+            },
+            "segmenter": {
+                "n_cls": 20,
+                "image_size": [
+                    128,
+                    128
+                ],
+                "fine_tune": true
+            }
         },
         "special_arguments": {
-            "enc_channels": [
-                10,
-                64,
-                128,
-                256,
-                512
-            ],
-            "bottleneck": 1024,
-            "num_classes": 20
+            "encoder": {
+                "pretrained": true
+            }
         }
     },
     "Experiment 10": {
-        "model": "UNet",
-        "rgb_only": false,
+        "model": "PViT",
+        "rgb_only": true,
         "multi_temporal": false,
+        "remove_clouds": true,
         "batch_size": 128,
-        "fold": 5,
+        "fold": 1,
         "standard_arguments": {
-            "num_classes": 20
+            "encoder": {
+                "embedding_dim": 64,
+                "model_dim": 1024,
+                "name": "L_16_imagenet1k"
+            },
+            "decoder": {
+                "n_cls": 20,
+                "patch_size": 16,
+                "d_encoder": 1024,
+                "n_layers": 8,
+                "d_model": 1024,
+                "d_ff": 512,
+                "drop_path_rate": 0.0,
+                "dropout": 0.1,
+                "n_heads": 8
+            },
+            "segmenter": {
+                "n_cls": 20,
+                "image_size": [
+                    128,
+                    128
+                ],
+                "fine_tune": true
+            }
         },
         "special_arguments": {
-            "enc_channels": [
-                10,
-                64,
-                128,
-                256,
-                512
-            ],
-            "bottleneck": 1024,
-            "num_classes": 20
+            "encoder": {
+                "pretrained": true
+            }
         }
     },
     "Experiment 11": {
-        "model": "UTAE",
-        "rgb_only": true,
-        "multi_temporal": true,
-        "batch_size": 4,
+        "model": "PViT",
+        "rgb_only": false,
+        "multi_temporal": false,
+        "remove_clouds": false,
+        "batch_size": 128,
         "fold": 1,
         "standard_arguments": {
-            "encoder_widths": [
-                64,
-                64,
-                64,
-                128
-            ],
-            "decoder_widths": [
-                32,
-                32,
-                64,
-                128
-            ],
-            "out_conv": [
-                32,
-                20
-            ],
-            "str_conv_k": 4,
-            "str_conv_s": 2,
-            "str_conv_p": 1,
-            "agg_mode": "att_group",
-            "encoder_norm": "group",
-            "n_head": 16,
-            "d_model": 256,
-            "d_k": 4,
-            "encoder": false,
-            "return_maps": false,
-            "pad_value": 0,
-            "padding_mode": "reflect"
+            "encoder": {
+                "embedding_dim": 64,
+                "model_dim": 1024,
+                "name": "L_16_imagenet1k"
+            },
+            "decoder": {
+                "n_cls": 20,
+                "patch_size": 16,
+                "d_encoder": 1024,
+                "n_layers": 8,
+                "d_model": 1024,
+                "d_ff": 512,
+                "drop_path_rate": 0.0,
+                "dropout": 0.1,
+                "n_heads": 8
+            },
+            "segmenter": {
+                "n_cls": 20,
+                "image_size": [
+                    128,
+                    128
+                ],
+                "fine_tune": true
+            }
         },
         "special_arguments": {
-            "input_dim": 3
+            "encoder": {
+                "pretrained": false
+            }
         }
     },
     "Experiment 12": {
-        "model": "UTAE",
-        "rgb_only": true,
-        "multi_temporal": true,
-        "batch_size": 4,
-        "fold": 2,
-        "standard_arguments": {
-            "encoder_widths": [
-                64,
-                64,
-                64,
-                128
-            ],
-            "decoder_widths": [
-                32,
-                32,
-                64,
-                128
-            ],
-            "out_conv": [
-                32,
-                20
-            ],
-            "str_conv_k": 4,
-            "str_conv_s": 2,
-            "str_conv_p": 1,
-            "agg_mode": "att_group",
-            "encoder_norm": "group",
-            "n_head": 16,
-            "d_model": 256,
-            "d_k": 4,
-            "encoder": false,
-            "return_maps": false,
-            "pad_value": 0,
-            "padding_mode": "reflect"
-        },
-        "special_arguments": {
-            "input_dim": 3
-        }
-    },
-    "Experiment 13": {
-        "model": "UTAE",
-        "rgb_only": true,
-        "multi_temporal": true,
-        "batch_size": 4,
-        "fold": 3,
-        "standard_arguments": {
-            "encoder_widths": [
-                64,
-                64,
-                64,
-                128
-            ],
-            "decoder_widths": [
-                32,
-                32,
-                64,
-                128
-            ],
-            "out_conv": [
-                32,
-                20
-            ],
-            "str_conv_k": 4,
-            "str_conv_s": 2,
-            "str_conv_p": 1,
-            "agg_mode": "att_group",
-            "encoder_norm": "group",
-            "n_head": 16,
-            "d_model": 256,
-            "d_k": 4,
-            "encoder": false,
-            "return_maps": false,
-            "pad_value": 0,
-            "padding_mode": "reflect"
-        },
-        "special_arguments": {
-            "input_dim": 3
-        }
-    },
-    "Experiment 14": {
-        "model": "UTAE",
-        "rgb_only": true,
-        "multi_temporal": true,
-        "batch_size": 4,
-        "fold": 4,
-        "standard_arguments": {
-            "encoder_widths": [
-                64,
-                64,
-                64,
-                128
-            ],
-            "decoder_widths": [
-                32,
-                32,
-                64,
-                128
-            ],
-            "out_conv": [
-                32,
-                20
-            ],
-            "str_conv_k": 4,
-            "str_conv_s": 2,
-            "str_conv_p": 1,
-            "agg_mode": "att_group",
-            "encoder_norm": "group",
-            "n_head": 16,
-            "d_model": 256,
-            "d_k": 4,
-            "encoder": false,
-            "return_maps": false,
-            "pad_value": 0,
-            "padding_mode": "reflect"
-        },
-        "special_arguments": {
-            "input_dim": 3
-        }
-    },
-    "Experiment 15": {
-        "model": "UTAE",
-        "rgb_only": true,
-        "multi_temporal": true,
-        "batch_size": 4,
-        "fold": 5,
-        "standard_arguments": {
-            "encoder_widths": [
-                64,
-                64,
-                64,
-                128
-            ],
-            "decoder_widths": [
-                32,
-                32,
-                64,
-                128
-            ],
-            "out_conv": [
-                32,
-                20
-            ],
-            "str_conv_k": 4,
-            "str_conv_s": 2,
-            "str_conv_p": 1,
-            "agg_mode": "att_group",
-            "encoder_norm": "group",
-            "n_head": 16,
-            "d_model": 256,
-            "d_k": 4,
-            "encoder": false,
-            "return_maps": false,
-            "pad_value": 0,
-            "padding_mode": "reflect"
-        },
-        "special_arguments": {
-            "input_dim": 3
-        }
-    },
-    "Experiment 16": {
-        "model": "UTAE",
+        "model": "PViT",
         "rgb_only": false,
-        "multi_temporal": true,
-        "batch_size": 4,
-        "fold": 1,
-        "standard_arguments": {
-            "encoder_widths": [
-                64,
-                64,
-                64,
-                128
-            ],
-            "decoder_widths": [
-                32,
-                32,
-                64,
-                128
-            ],
-            "out_conv": [
-                32,
-                20
-            ],
-            "str_conv_k": 4,
-            "str_conv_s": 2,
-            "str_conv_p": 1,
-            "agg_mode": "att_group",
-            "encoder_norm": "group",
-            "n_head": 16,
-            "d_model": 256,
-            "d_k": 4,
-            "encoder": false,
-            "return_maps": false,
-            "pad_value": 0,
-            "padding_mode": "reflect"
-        },
-        "special_arguments": {
-            "input_dim": 10
-        }
-    },
-    "Experiment 17": {
-        "model": "UTAE",
-        "rgb_only": false,
-        "multi_temporal": true,
-        "batch_size": 4,
-        "fold": 2,
-        "standard_arguments": {
-            "encoder_widths": [
-                64,
-                64,
-                64,
-                128
-            ],
-            "decoder_widths": [
-                32,
-                32,
-                64,
-                128
-            ],
-            "out_conv": [
-                32,
-                20
-            ],
-            "str_conv_k": 4,
-            "str_conv_s": 2,
-            "str_conv_p": 1,
-            "agg_mode": "att_group",
-            "encoder_norm": "group",
-            "n_head": 16,
-            "d_model": 256,
-            "d_k": 4,
-            "encoder": false,
-            "return_maps": false,
-            "pad_value": 0,
-            "padding_mode": "reflect"
-        },
-        "special_arguments": {
-            "input_dim": 10
-        }
-    },
-    "Experiment 18": {
-        "model": "UTAE",
-        "rgb_only": false,
-        "multi_temporal": true,
-        "batch_size": 4,
-        "fold": 3,
-        "standard_arguments": {
-            "encoder_widths": [
-                64,
-                64,
-                64,
-                128
-            ],
-            "decoder_widths": [
-                32,
-                32,
-                64,
-                128
-            ],
-            "out_conv": [
-                32,
-                20
-            ],
-            "str_conv_k": 4,
-            "str_conv_s": 2,
-            "str_conv_p": 1,
-            "agg_mode": "att_group",
-            "encoder_norm": "group",
-            "n_head": 16,
-            "d_model": 256,
-            "d_k": 4,
-            "encoder": false,
-            "return_maps": false,
-            "pad_value": 0,
-            "padding_mode": "reflect"
-        },
-        "special_arguments": {
-            "input_dim": 10
-        }
-    },
-    "Experiment 19": {
-        "model": "UTAE",
-        "rgb_only": false,
-        "multi_temporal": true,
-        "batch_size": 4,
-        "fold": 4,
-        "standard_arguments": {
-            "encoder_widths": [
-                64,
-                64,
-                64,
-                128
-            ],
-            "decoder_widths": [
-                32,
-                32,
-                64,
-                128
-            ],
-            "out_conv": [
-                32,
-                20
-            ],
-            "str_conv_k": 4,
-            "str_conv_s": 2,
-            "str_conv_p": 1,
-            "agg_mode": "att_group",
-            "encoder_norm": "group",
-            "n_head": 16,
-            "d_model": 256,
-            "d_k": 4,
-            "encoder": false,
-            "return_maps": false,
-            "pad_value": 0,
-            "padding_mode": "reflect"
-        },
-        "special_arguments": {
-            "input_dim": 10
-        }
-    },
-    "Experiment 20": {
-        "model": "UTAE",
-        "rgb_only": false,
-        "multi_temporal": true,
-        "batch_size": 4,
-        "fold": 5,
-        "standard_arguments": {
-            "encoder_widths": [
-                64,
-                64,
-                64,
-                128
-            ],
-            "decoder_widths": [
-                32,
-                32,
-                64,
-                128
-            ],
-            "out_conv": [
-                32,
-                20
-            ],
-            "str_conv_k": 4,
-            "str_conv_s": 2,
-            "str_conv_p": 1,
-            "agg_mode": "att_group",
-            "encoder_norm": "group",
-            "n_head": 16,
-            "d_model": 256,
-            "d_k": 4,
-            "encoder": false,
-            "return_maps": false,
-            "pad_value": 0,
-            "padding_mode": "reflect"
-        },
-        "special_arguments": {
-            "input_dim": 10
-        }
-    },
-    "Experiment 21": {
-        "model": "ViT",
-        "rgb_only": true,
         "multi_temporal": false,
+        "remove_clouds": true,
         "batch_size": 128,
         "fold": 1,
         "standard_arguments": {
             "encoder": {
-                "image_size": [
-                    128,
-                    128
-                ],
-                "patch_size": 8,
-                "n_layers": 4,
-                "d_model": 256,
-                "d_ff": 256,
-                "n_heads": 16,
-                "n_cls": 20
+                "embedding_dim": 64,
+                "model_dim": 1024,
+                "name": "L_16_imagenet1k"
             },
             "decoder": {
                 "n_cls": 20,
-                "patch_size": 8,
-                "d_encoder": 256,
-                "n_layers": 4,
-                "d_model": 512,
-                "d_ff": 256,
-                "drop_path_rate": 0.1,
+                "patch_size": 16,
+                "d_encoder": 1024,
+                "n_layers": 8,
+                "d_model": 1024,
+                "d_ff": 512,
+                "drop_path_rate": 0.0,
                 "dropout": 0.1,
                 "n_heads": 8
             },
             "segmenter": {
-                "n_cls": 20
-            }
-        },
-        "special_arguments": {
-            "encoder": {
-                "channels": 3
-            }
-        }
-    },
-    "Experiment 22": {
-        "model": "ViT",
-        "rgb_only": true,
-        "multi_temporal": false,
-        "batch_size": 128,
-        "fold": 2,
-        "standard_arguments": {
-            "encoder": {
+                "n_cls": 20,
                 "image_size": [
                     128,
                     128
                 ],
-                "patch_size": 8,
-                "n_layers": 4,
-                "d_model": 256,
-                "d_ff": 256,
-                "n_heads": 16,
-                "n_cls": 20
-            },
-            "decoder": {
-                "n_cls": 20,
-                "patch_size": 8,
-                "d_encoder": 256,
-                "n_layers": 4,
-                "d_model": 512,
-                "d_ff": 256,
-                "drop_path_rate": 0.1,
-                "dropout": 0.1,
-                "n_heads": 8
-            },
-            "segmenter": {
-                "n_cls": 20
+                "fine_tune": true
             }
         },
         "special_arguments": {
             "encoder": {
-                "channels": 3
-            }
-        }
-    },
-    "Experiment 23": {
-        "model": "ViT",
-        "rgb_only": true,
-        "multi_temporal": false,
-        "batch_size": 128,
-        "fold": 3,
-        "standard_arguments": {
-            "encoder": {
-                "image_size": [
-                    128,
-                    128
-                ],
-                "patch_size": 8,
-                "n_layers": 4,
-                "d_model": 256,
-                "d_ff": 256,
-                "n_heads": 16,
-                "n_cls": 20
-            },
-            "decoder": {
-                "n_cls": 20,
-                "patch_size": 8,
-                "d_encoder": 256,
-                "n_layers": 4,
-                "d_model": 512,
-                "d_ff": 256,
-                "drop_path_rate": 0.1,
-                "dropout": 0.1,
-                "n_heads": 8
-            },
-            "segmenter": {
-                "n_cls": 20
-            }
-        },
-        "special_arguments": {
-            "encoder": {
-                "channels": 3
-            }
-        }
-    },
-    "Experiment 24": {
-        "model": "ViT",
-        "rgb_only": true,
-        "multi_temporal": false,
-        "batch_size": 128,
-        "fold": 4,
-        "standard_arguments": {
-            "encoder": {
-                "image_size": [
-                    128,
-                    128
-                ],
-                "patch_size": 8,
-                "n_layers": 4,
-                "d_model": 256,
-                "d_ff": 256,
-                "n_heads": 16,
-                "n_cls": 20
-            },
-            "decoder": {
-                "n_cls": 20,
-                "patch_size": 8,
-                "d_encoder": 256,
-                "n_layers": 4,
-                "d_model": 512,
-                "d_ff": 256,
-                "drop_path_rate": 0.1,
-                "dropout": 0.1,
-                "n_heads": 8
-            },
-            "segmenter": {
-                "n_cls": 20
-            }
-        },
-        "special_arguments": {
-            "encoder": {
-                "channels": 3
-            }
-        }
-    },
-    "Experiment 25": {
-        "model": "ViT",
-        "rgb_only": true,
-        "multi_temporal": false,
-        "batch_size": 128,
-        "fold": 5,
-        "standard_arguments": {
-            "encoder": {
-                "image_size": [
-                    128,
-                    128
-                ],
-                "patch_size": 8,
-                "n_layers": 4,
-                "d_model": 256,
-                "d_ff": 256,
-                "n_heads": 16,
-                "n_cls": 20
-            },
-            "decoder": {
-                "n_cls": 20,
-                "patch_size": 8,
-                "d_encoder": 256,
-                "n_layers": 4,
-                "d_model": 512,
-                "d_ff": 256,
-                "drop_path_rate": 0.1,
-                "dropout": 0.1,
-                "n_heads": 8
-            },
-            "segmenter": {
-                "n_cls": 20
-            }
-        },
-        "special_arguments": {
-            "encoder": {
-                "channels": 3
-            }
-        }
-    },
-    "Experiment 26": {
-        "model": "ViT",
-        "rgb_only": false,
-        "multi_temporal": false,
-        "batch_size": 128,
-        "fold": 1,
-        "standard_arguments": {
-            "encoder": {
-                "image_size": [
-                    128,
-                    128
-                ],
-                "patch_size": 8,
-                "n_layers": 4,
-                "d_model": 256,
-                "d_ff": 256,
-                "n_heads": 16,
-                "n_cls": 20
-            },
-            "decoder": {
-                "n_cls": 20,
-                "patch_size": 8,
-                "d_encoder": 256,
-                "n_layers": 4,
-                "d_model": 512,
-                "d_ff": 256,
-                "drop_path_rate": 0.1,
-                "dropout": 0.1,
-                "n_heads": 8
-            },
-            "segmenter": {
-                "n_cls": 20
-            }
-        },
-        "special_arguments": {
-            "encoder": {
-                "channels": 10
-            }
-        }
-    },
-    "Experiment 27": {
-        "model": "ViT",
-        "rgb_only": false,
-        "multi_temporal": false,
-        "batch_size": 128,
-        "fold": 2,
-        "standard_arguments": {
-            "encoder": {
-                "image_size": [
-                    128,
-                    128
-                ],
-                "patch_size": 8,
-                "n_layers": 4,
-                "d_model": 256,
-                "d_ff": 256,
-                "n_heads": 16,
-                "n_cls": 20
-            },
-            "decoder": {
-                "n_cls": 20,
-                "patch_size": 8,
-                "d_encoder": 256,
-                "n_layers": 4,
-                "d_model": 512,
-                "d_ff": 256,
-                "drop_path_rate": 0.1,
-                "dropout": 0.1,
-                "n_heads": 8
-            },
-            "segmenter": {
-                "n_cls": 20
-            }
-        },
-        "special_arguments": {
-            "encoder": {
-                "channels": 10
-            }
-        }
-    },
-    "Experiment 28": {
-        "model": "ViT",
-        "rgb_only": false,
-        "multi_temporal": false,
-        "batch_size": 128,
-        "fold": 3,
-        "standard_arguments": {
-            "encoder": {
-                "image_size": [
-                    128,
-                    128
-                ],
-                "patch_size": 8,
-                "n_layers": 4,
-                "d_model": 256,
-                "d_ff": 256,
-                "n_heads": 16,
-                "n_cls": 20
-            },
-            "decoder": {
-                "n_cls": 20,
-                "patch_size": 8,
-                "d_encoder": 256,
-                "n_layers": 4,
-                "d_model": 512,
-                "d_ff": 256,
-                "drop_path_rate": 0.1,
-                "dropout": 0.1,
-                "n_heads": 8
-            },
-            "segmenter": {
-                "n_cls": 20
-            }
-        },
-        "special_arguments": {
-            "encoder": {
-                "channels": 10
-            }
-        }
-    },
-    "Experiment 29": {
-        "model": "ViT",
-        "rgb_only": false,
-        "multi_temporal": false,
-        "batch_size": 128,
-        "fold": 4,
-        "standard_arguments": {
-            "encoder": {
-                "image_size": [
-                    128,
-                    128
-                ],
-                "patch_size": 8,
-                "n_layers": 4,
-                "d_model": 256,
-                "d_ff": 256,
-                "n_heads": 16,
-                "n_cls": 20
-            },
-            "decoder": {
-                "n_cls": 20,
-                "patch_size": 8,
-                "d_encoder": 256,
-                "n_layers": 4,
-                "d_model": 512,
-                "d_ff": 256,
-                "drop_path_rate": 0.1,
-                "dropout": 0.1,
-                "n_heads": 8
-            },
-            "segmenter": {
-                "n_cls": 20
-            }
-        },
-        "special_arguments": {
-            "encoder": {
-                "channels": 10
-            }
-        }
-    },
-    "Experiment 30": {
-        "model": "ViT",
-        "rgb_only": false,
-        "multi_temporal": false,
-        "batch_size": 128,
-        "fold": 5,
-        "standard_arguments": {
-            "encoder": {
-                "image_size": [
-                    128,
-                    128
-                ],
-                "patch_size": 8,
-                "n_layers": 4,
-                "d_model": 256,
-                "d_ff": 256,
-                "n_heads": 16,
-                "n_cls": 20
-            },
-            "decoder": {
-                "n_cls": 20,
-                "patch_size": 8,
-                "d_encoder": 256,
-                "n_layers": 4,
-                "d_model": 512,
-                "d_ff": 256,
-                "drop_path_rate": 0.1,
-                "dropout": 0.1,
-                "n_heads": 8
-            },
-            "segmenter": {
-                "n_cls": 20
-            }
-        },
-        "special_arguments": {
-            "encoder": {
-                "channels": 10
+                "pretrained": false
             }
         }
     }

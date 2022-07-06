@@ -1,10 +1,15 @@
+from locale import normalize
 import torch
+from torch import nn
+from torch.nn import functional as F
 import pytorch_lightning as pl
 import os, sys
 from torch.utils.data import DataLoader
 from torchmetrics.classification import Accuracy, Precision, Recall, F1Score, JaccardIndex
 import numpy as np
 from pytorch_lightning.loggers import NeptuneLogger, TensorBoardLogger
+import torchvision
+import matplotlib.pyplot as plt
 
 root_dir = os.path.abspath(os.getcwd())
 sys.path.insert(0, root_dir)
@@ -13,7 +18,9 @@ from src.backbones.UTAE.utae import UTAE
 from src.backbones.Vit.model.vit import VisionTransformer
 from src.backbones.Vit.model.decoder import MaskTransformer
 from src.backbones.Vit.model.segmenter import Segmenter
-from src.utilities.dataloader import create_split_dataloaders, PASTIS
+from src.backbones.Vit.model.pretrained_segmenter import PreSegmenter
+from src.utilities.dataloader import PASTIS
+from src.utilities.diceloss import DiceLoss
 del sys.path[0]
 
 class LitModule(pl.LightningModule):
@@ -25,11 +32,13 @@ class LitModule(pl.LightningModule):
         num_workers=4,
         batch_size=4,
         learning_rate=0.05,
-        loss_function = torch.nn.CrossEntropyLoss(label_smoothing=.1),
+        # loss_function = torch.nn.CrossEntropyLoss(label_smoothing=.1),
+        loss_function = DiceLoss(),
         save_dir = './models/',
         hparams=None,
     ):
         super().__init__()
+        self.save_hyperparameters(hparams)
         self.num_workers = num_workers
         self.learning_rate = learning_rate
         self.batch_size = batch_size
@@ -49,7 +58,7 @@ class LitModule(pl.LightningModule):
         self.save_dir = save_dir
         
         self.model = model
-        
+
 
     def create_metrics(self):
         # Training metrics
@@ -86,20 +95,21 @@ class LitModule(pl.LightningModule):
 
         self.log('lr', optimizer.param_groups[0]['lr'], prog_bar=True)
 
-    def on_after_backward(self):
-        if self.logger == TensorBoardLogger:
-            global_step = self.global_step
-            for name, param in self.model.named_parameters():
-                self.logger.experiment.add_histogram(name, param, global_step)
-                if param.requires_grad:
-                    if param.grad is not None:
-                        self.logger.experiment.add_histogram(f"{name}_grad", param.grad, global_step)
+    # def on_after_backward(self):
+    #     if isinstance(self.logger,TensorBoardLogger):
+    #         global_step = self.global_step
+    #         for name, param in self.model.named_parameters():
+    #             self.logger.experiment.add_histogram(name, param, global_step)
+    #             if param.requires_grad:
+    #                 if param.grad is not None:
+    #                     self.logger.experiment.add_histogram(f"{name}_grad", param.grad, global_step)
 
     def train_dataloader(self):
         train_set = PASTIS(
             **self.standard_args, 
             **self.data_args, 
-            subset_type='train'
+            subset_type='train',
+            shuffle=True,
         )
         train_loader = DataLoader(
             train_set,
@@ -144,11 +154,25 @@ class LitModule(pl.LightningModule):
         return test_loader
 
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
+        optimizer = torch.optim.Adam(
+            self.parameters(), 
+            lr=self.learning_rate,
+            weight_decay=0.0001,
+
+            )
+
+        if isinstance(self.model, PreSegmenter):
+            params = self.model.parameters() if self.model.fine_tune else self.model.decoder.parameters()
+            optimizer = torch.optim.SGD(
+                params,
+                lr=self.learning_rate,
+                momentum=0.9,
+                weight_decay=0.0001,
+            )
         self.optimizer = optimizer
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
             optimizer,
-            mode='min',
+            mode=self.user_params.monitor_mode,
             factor=0.5,
             patience=5,
             verbose=True,
@@ -167,8 +191,7 @@ class LitModule(pl.LightningModule):
         }
 
         return {'optimizer': optimizer, 'lr_scheduler': lr_scheduler_config}
-    
-    
+     
     def training_step(self, train_batch, batch_idx):
         inputs, labels, times = train_batch
         outputs = self(inputs, times)
@@ -258,7 +281,7 @@ class LitModule(pl.LightningModule):
         if not os.path.exists(os.path.join(self.save_dir, model_name)):
             os.makedirs(os.path.join(self.save_dir, model_name))
 
-        path = os.path.join(self.save_dir, model_name, name+f'_e{self.current_epoch}') + '.md5'
+        path = os.path.join(self.save_dir, model_name, name) + '.md5'
         torch.save({
                 'epoch': self.current_epoch,
                 'model_state_dict': self.model.state_dict(),

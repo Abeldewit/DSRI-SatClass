@@ -1,3 +1,4 @@
+from attr import has
 import numpy as np
 import torch.utils.data as tdata
 from torch.utils.data import DataLoader
@@ -7,43 +8,7 @@ import os
 import json
 from datetime import datetime
 import multiprocessing as mp
-
-def create_split_dataloaders(batch_size:int, shuffle:bool, num_workers:int=0, *args, **kwargs):
-    """
-    Creates three dataloaders from the PASTIS dataset, based on a fold.
-    """
-    fold = kwargs['fold']
-    print("Creating dataloaders for fold {}".format(fold))
-
-    train_set = PASTIS(*args, **kwargs, subset_type='train')
-    val_set = PASTIS(*args, **kwargs, subset_type='val')
-    test_set = PASTIS(*args, **kwargs, subset_type='test')
-
-    train= DataLoader(
-        train_set, 
-        batch_size=batch_size, 
-        shuffle=shuffle,
-        num_workers=num_workers,
-        pin_memory=True,
-        prefetch_factor=2,
-    )
-    val = DataLoader(
-        val_set, 
-        batch_size=batch_size, 
-        shuffle=False,
-        num_workers=num_workers,
-        pin_memory=True,
-        prefetch_factor=2,
-    )
-    test = DataLoader(
-        test_set, 
-        batch_size=batch_size, 
-        shuffle=False,
-        num_workers=num_workers,
-        pin_memory=True,
-        prefetch_factor=2,
-    )
-    return train, val, test
+import torchvision
 
 
 class PASTIS(tdata.Dataset):
@@ -60,6 +25,8 @@ class PASTIS(tdata.Dataset):
         device: str = 'cpu',
         shuffle: bool = False,
         pre_load = False,
+        remove_clouds = False,
+        norm = True, # Normalize the data
     ) -> None:
         """
         Data loader for PASTIS dataset. With customization options for the data output. 
@@ -81,6 +48,7 @@ class PASTIS(tdata.Dataset):
         self.label_files = label_files
         self.rgb = rgb_only
         self.multi_temporal = multi_temporal
+        self.remove_clouds = remove_clouds
         self.fold = fold
         self.reference_date = datetime.strptime(reference_date, '%Y-%m-%d')
         self.subset_type = subset_type
@@ -94,6 +62,9 @@ class PASTIS(tdata.Dataset):
 
         if not self.multi_temporal and self.pad:
             raise ValueError('Padding is only neccesary for multi-temporal data.')
+        
+        if self.remove_clouds:
+            self.no_clouds = json.load(open(os.path.join(self.folder, 'cloud_dict.json')))
 
         self.metadata = self._read_metadata()
         self.combination = self._create_combination()
@@ -105,6 +76,20 @@ class PASTIS(tdata.Dataset):
         if self.pre_load:
             self.load_all()
             self.done_loading = True
+
+        if norm:
+            with open(
+                os.path.join(self.folder, "NORM_S2_patch.json"), "r"
+            ) as file:
+                normvals = json.loads(file.read())[f'Fold_{self.fold}']
+            
+            means = torch.tensor(normvals['mean'])
+            stds = torch.tensor(normvals['std'])
+            if self.rgb:
+                means = means[[2, 1, 0]]
+                stds = stds[[2, 1, 0]]
+
+            self.norm = torchvision.transforms.Normalize(means, stds)
 
     def load_all(self):
         """
@@ -184,6 +169,9 @@ class PASTIS(tdata.Dataset):
 
         elif not self.multi_temporal:
             x = x[time, :, :, :]
+
+        if hasattr(self, 'norm'):
+            x = self.norm(x)
         
         return x, y, time
 
@@ -219,6 +207,11 @@ class PASTIS(tdata.Dataset):
         for cmb in multi_temporal_combinations:
             time_length = len(cmb['time'])
             for i in range(time_length):
+                f_name = cmb['data_path'].split('/')[-1].replace('.npy', '')
+                if hasattr(self, 'no_clouds'):
+                    if f_name in self.no_clouds:
+                        if i in self.no_clouds[f_name]:
+                            continue
                 no_temporal_combinations.append(
                     {
                         'data_path': cmb['data_path'],
@@ -279,10 +272,11 @@ class PASTIS(tdata.Dataset):
 
 if __name__ == "__main__":
     dl = PASTIS(
-        path_to_pastis='/Users/abel/Coding/Capgemini/DSRI-SatClass/data/PASTIS',
+        path_to_pastis='/Users/abel/Coding/Capgemini/DSRI-SatClass/src/data/PASTIS',
         data_files='DATA_S2',
         label_files='ANNOTATIONS',
         rgb_only=True, 
         multi_temporal=True,
         pre_load=True
         )
+    next(iter(dl))
