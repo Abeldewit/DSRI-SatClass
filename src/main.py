@@ -144,7 +144,7 @@ def create_trainer(hparams, exp):
         fast_dev_run=hparams.fast_dev,
         log_every_n_steps=hparams.log_every_n_steps,
         overfit_batches=hparams.overfit_batches,
-        deterministic=True,
+        # deterministic=True,
     )
     return trainer
 
