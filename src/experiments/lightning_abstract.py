@@ -282,6 +282,8 @@ class LitModule(pl.LightningModule):
 
     def save_model(self, loss):
         model_name = str(type(self.model)).split('.')[2]
+        if str(type(self.model)).split('.')[-1] == "PreSegmenter'>":
+            model_name = "PViT"
         name = model_name + "_" + str(list(self.data_args.values()))
         if not os.path.exists(os.path.join(self.save_dir, model_name)):
             os.makedirs(os.path.join(self.save_dir, model_name))

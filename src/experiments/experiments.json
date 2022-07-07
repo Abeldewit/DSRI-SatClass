@@ -254,7 +254,8 @@
             "encoder": {
                 "embedding_dim": 64,
                 "model_dim": 1024,
-                "name": "L_16_imagenet1k"
+                "name": "L_16_imagenet1k",
+                "num_classes": 20
             },
             "decoder": {
                 "n_cls": 20,
@@ -278,7 +279,8 @@
         },
         "special_arguments": {
             "encoder": {
-                "pretrained": true
+                "pretrained": true,
+                "in_channels": 3
             }
         }
     },
@@ -293,7 +295,8 @@
             "encoder": {
                 "embedding_dim": 64,
                 "model_dim": 1024,
-                "name": "L_16_imagenet1k"
+                "name": "L_16_imagenet1k",
+                "num_classes": 20
             },
             "decoder": {
                 "n_cls": 20,
@@ -317,7 +320,8 @@
         },
         "special_arguments": {
             "encoder": {
-                "pretrained": true
+                "pretrained": true,
+                "in_channels": 3
             }
         }
     },
@@ -332,7 +336,8 @@
             "encoder": {
                 "embedding_dim": 64,
                 "model_dim": 1024,
-                "name": "L_16_imagenet1k"
+                "name": "L_16_imagenet1k",
+                "num_classes": 20
             },
             "decoder": {
                 "n_cls": 20,
@@ -356,7 +361,8 @@
         },
         "special_arguments": {
             "encoder": {
-                "pretrained": false
+                "pretrained": false,
+                "in_channels": 10
             }
         }
     },
@@ -371,7 +377,8 @@
             "encoder": {
                 "embedding_dim": 64,
                 "model_dim": 1024,
-                "name": "L_16_imagenet1k"
+                "name": "L_16_imagenet1k",
+                "num_classes": 20
             },
             "decoder": {
                 "n_cls": 20,
@@ -395,7 +402,8 @@
         },
         "special_arguments": {
             "encoder": {
-                "pretrained": false
+                "pretrained": false,
+                "in_channels": 10
             }
         }
     }

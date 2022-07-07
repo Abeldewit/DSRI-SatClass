@@ -82,6 +82,7 @@ standard_model_options = {
             'embedding_dim': 64,
             'model_dim': 1024,
             'name': 'L_16_imagenet1k',
+            'num_classes': 20,
         },
         'decoder': {
             'n_cls': 20,
@@ -124,8 +125,8 @@ special_model_options = {
     #     'spec_no_temp': {'encoder': {'channels': 10}},
     # },
     'PViT': {
-        'rgb_no_temp': {'encoder': {'pretrained': True}},
-        'spec_no_temp': {'encoder': {'pretrained': False}},
+        'rgb_no_temp': {'encoder': {'pretrained': True, 'in_channels': 3}},
+        'spec_no_temp': {'encoder': {'pretrained': False, 'in_channels': 10}},
     }
 }
 
