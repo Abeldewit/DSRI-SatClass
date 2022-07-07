@@ -146,7 +146,8 @@ class LitModule(pl.LightningModule):
         test_set = PASTIS(
             **self.standard_args, 
             **self.data_args, 
-            subset_type='test'
+            subset_type='test',
+            norm=self.user_params.norm,
         )
         test_loader = DataLoader(
             test_set,
