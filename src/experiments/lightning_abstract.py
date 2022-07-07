@@ -289,7 +289,7 @@ class LitModule(pl.LightningModule):
         if not os.path.exists(os.path.join(self.save_dir, model_name)):
             os.makedirs(os.path.join(self.save_dir, model_name))
 
-        path = os.path.join(self.save_dir, model_name, name) + '.md5'
+        path = os.path.join(self.save_dir, model_name, name) + '.ckpt'
         torch.save({
                 'epoch': self.current_epoch,
                 'model_state_dict': self.model.state_dict(),
