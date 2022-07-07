@@ -38,8 +38,17 @@ In order to replicate the results of the research, the code is used in the follo
     * monitor: The metric to monitor for early stopping and learning rate decay (default: `'metrics/val/loss'`)
     * monitor_mode:  The mode to use for the early stopping and learning rate decay (default: `'min'`)
 
+Example command when training UTAE on GPU:
+`python src/main.py --path=./data/PASTIS --num_workers=8 --accelerator=gpu --devices=1 --model_only=UTAE
+
 The folder structure is as follows:
-* models: contains the different models used, and adapted to the dataset
-* results: contains the results of the experiments
-* data: contains the dataset (not included on GitHub because of its size)
-* utilities: contains several helper functions used in the code
+* gfx: The folder containing the graphics used in the report
+* notebooks: Notebooks used for data exploration and model evaluation
+* src: The folder containing the code
+  * backbones: The folder containing the models that are tested:
+    * UNet
+    * UTAE
+    * Vit
+  * data: This folder is not included on github as it contains the PASTIS dataset
+  * experiments: The folder containing the code to create the `experiments.json` file
+  * utilities: Several helper functions such as downloading and visualising the dataset.
