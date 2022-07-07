@@ -39,7 +39,7 @@ In order to replicate the results of the research, the code is used in the follo
     * monitor_mode:  The mode to use for the early stopping and learning rate decay (default: `'min'`)
 
 Example command when training UTAE on GPU:
-`python src/main.py --path=./data/PASTIS --num_workers=8 --accelerator=gpu --devices=1 --model_only=UTAE
+`python src/main.py --path=./data/PASTIS --num_workers=8 --accelerator=gpu --devices=1 --model_only=UTAE`
 
 The folder structure is as follows:
 * gfx: The folder containing the graphics used in the report
