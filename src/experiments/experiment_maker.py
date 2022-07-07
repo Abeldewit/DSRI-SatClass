@@ -29,8 +29,8 @@ data_options = {
 batch_size_options = {
     'UNet': 128,
     'UTAE': 4,
-    'ViT': 128,
-    'PViT': 128,
+    # 'ViT': 128,
+    'PViT': 64,
 }
 
 standard_model_options = {
@@ -54,29 +54,29 @@ standard_model_options = {
         'pad_value':0,
         'padding_mode':"reflect",
     },
-    'ViT': {
-        'encoder': {
-            'image_size': (128,128),
-            'patch_size': 16,
-            'n_layers': 4,
-            'd_model': 768,
-            'd_ff': 256,
-            'n_heads': 4,
-            'n_cls': 20
-        },
-        'decoder': {
-            'n_cls': 20,
-            'patch_size': 16,
-            'd_encoder': 768,
-            'n_layers': 8,
-            'd_model': 1024,
-            'd_ff': 512,
-            'drop_path_rate': 0.,
-            'dropout': 0.1,
-            'n_heads': 12,
-        },
-        'segmenter': {'n_cls': 20}
-    },
+    # 'ViT': {
+    #     'encoder': {
+    #         'image_size': (128,128),
+    #         'patch_size': 16,
+    #         'n_layers': 4,
+    #         'd_model': 768,
+    #         'd_ff': 256,
+    #         'n_heads': 4,
+    #         'n_cls': 20
+    #     },
+    #     'decoder': {
+    #         'n_cls': 20,
+    #         'patch_size': 16,
+    #         'd_encoder': 768,
+    #         'n_layers': 8,
+    #         'd_model': 1024,
+    #         'd_ff': 512,
+    #         'drop_path_rate': 0.,
+    #         'dropout': 0.1,
+    #         'n_heads': 12,
+    #     },
+    #     'segmenter': {'n_cls': 20}
+    # },
     'PViT': {
         'encoder': {
             'embedding_dim': 64,
@@ -119,10 +119,10 @@ special_model_options = {
         'rgb_temp': {'input_dim': 3},
         'spec_temp': {'input_dim': 10},
     },
-    'ViT': {
-        'rgb_no_temp': {'encoder': {'channels': 3}},
-        'spec_no_temp': {'encoder': {'channels': 10}},
-    },
+    # 'ViT': {
+    #     'rgb_no_temp': {'encoder': {'channels': 3}},
+    #     'spec_no_temp': {'encoder': {'channels': 10}},
+    # },
     'PViT': {
         'rgb_no_temp': {'encoder': {'pretrained': True}},
         'spec_no_temp': {'encoder': {'pretrained': False}},

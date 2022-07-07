@@ -14,6 +14,7 @@ import pytorch_pretrained_vit as ptv
 from pytorch_pretrained_vit.model import PositionalEmbedding1D
 
 sys.path.insert(0, os.getcwd())
+from src.experiments.experiment_maker import *
 from src.backbones.UNet.unet import UNet
 from src.backbones.UTAE.utae import UTAE
 from src.backbones.Vit.model.vit import VisionTransformer
