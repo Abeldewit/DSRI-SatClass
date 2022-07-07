@@ -9,6 +9,21 @@ In the research, different models and data-types are compared to benchmark the p
 The models are trained on the [PASTIS](https://github.com/VSainteuf/pastis-benchmark) dataset, wich is a satellite dataset of satellite images containing annotated images for 18 different crop types. 
 
 ---
+### Models used
+The following models are used:
+* UNet: https://arxiv.org/abs/1505.04597
+  
+  A simple UNet model that is used as a baseline for the experiments.
+* UTAE: https://github.com/VSainteuf/utae-paps
+
+  The UTAE model is a variant of the UNet model with a Temporal Auto-Encoder (TAE).
+  This model has the current highest metrics on the PASTIS data-set.
+
+* Adaptation of Segmenter: https://github.com/rstrudel/segmenter
+
+  The Segmenter model is a combination of a VisionTransformer (ViT) and a MaskTransformer. In this work, the VisionTransformer is replaced with a pre-trained version provided by [lukemelas](https://github.com/lukemelas/PyTorch-Pretrained-ViT)
+
+---
 ### Replicate experiments
 In order to replicate the results of the research, the code is used in the following way:
 * Install the dependencies using the command `pip install -r requirements.txt`
@@ -58,18 +73,3 @@ The folder structure is as follows:
   * data: This folder is not included on github as it contains the PASTIS dataset
   * experiments: The folder containing the code to create the `experiments.json` file
   * utilities: Several helper functions such as downloading and visualising the dataset.
-
----
-### Models used
-The following models are used:
-* UNet: https://arxiv.org/abs/1505.04597
-  
-  A simple UNet model that is used as a baseline for the experiments.
-* UTAE: https://github.com/VSainteuf/utae-paps
-
-  The UTAE model is a variant of the UNet model with a Temporal Auto-Encoder (TAE).
-  This model has the current highest metrics on the PASTIS data-set.
-
-* Adaptation of Segmenter: https://github.com/rstrudel/segmenter
-
-  The Segmenter model is a combination of a VisionTransformer (ViT) and a MaskTransformer. In this work, the VisionTransformer is replaced with a pre-trained version provided by [lukemelas](https://github.com/lukemelas/PyTorch-Pretrained-ViT)
