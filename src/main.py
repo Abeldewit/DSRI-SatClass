@@ -42,6 +42,9 @@ def experiment_generator(hparams):
         model_name = args['model']
         if model_only and model_name != model_only:
             continue
+        if hparams.fold and args['fold'] != hparams.fold:
+            continue
+
         print(f'\n\n** Running: {exp} **')
         print('-'*27)
         # Get the arguments
@@ -213,6 +216,7 @@ if __name__ == "__main__":
     parser.add_argument('--monitor', type=str, default='metrics/val/loss')
     parser.add_argument('--monitor_mode', type=str, default='min')
     parser.add_argument('--norm', type=bool, default=False)
+    parser.add_argument('--fold', type=int, default=None)
     
     args = parser.parse_args()
     

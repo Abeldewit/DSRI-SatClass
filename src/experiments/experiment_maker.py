@@ -12,7 +12,7 @@ experiment_options = {
     'rgb_only': ('rgb', 'spec'), 
     'multi_temporal': ('temp', 'no_temp'),
     'remove_cloud': ('', 'no_cloud'), 
-    'fold': (1,),
+    'fold': (1,2,3,4,5,),
 }
 
 data_options = {
