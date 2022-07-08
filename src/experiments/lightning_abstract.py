@@ -232,6 +232,10 @@ class LitModule(pl.LightningModule):
 
     def validation_step(self, val_batch, batch_idx):
         vinputs, vlabels, vtimes = val_batch
+        if isinstance(self.model, PreSegmenter):
+            # Increase image size
+            vinputs = self.image_transform(vinputs)
+
         voutputs = self(vinputs, vtimes)
         vloss = self.loss_fn_val(voutputs, vlabels.long())
         self.log("metrics/val/loss", vloss, prog_bar=False, on_step=False, on_epoch=True)
@@ -276,6 +280,9 @@ class LitModule(pl.LightningModule):
     def test_step(self, test_batch, batch_idx):
         self.model.eval()
         tinputs, tlabels, ttimes = test_batch
+        if isinstance(self.model, PreSegmenter):
+            # Increase image size
+            tinputs = self.image_transform(tinputs)
         toutputs = self(tinputs, ttimes)
 
         # Update metrics
