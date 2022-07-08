@@ -79,7 +79,6 @@ standard_model_options = {
     # },
     'PViT': {
         'encoder': {
-            'embedding_dim': 64,
             'model_dim': 1024,
             'name': 'L_16_imagenet1k',
             'num_classes': 20,
@@ -97,7 +96,8 @@ standard_model_options = {
         },
         'segmenter': {
             'n_cls': 20,
-            'image_size': (128,128),
+            'output_image_size': (128,128),
+            'image_size': (512, 512),
             'fine_tune': True,
         }
     }

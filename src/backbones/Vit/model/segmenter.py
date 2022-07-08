@@ -12,12 +12,14 @@ class Segmenter(nn.Module):
         encoder,
         decoder,
         n_cls,
+        image_size=None,
     ):
         super().__init__()
         self.n_cls = n_cls
         self.patch_size = encoder.patch_size
         self.encoder = encoder
         self.decoder = decoder
+        self.image_size = image_size
 
     @torch.jit.ignore
     def no_weight_decay(self):
@@ -41,9 +43,12 @@ class Segmenter(nn.Module):
         x = x[:, num_extra_tokens:]
 
         masks = self.decoder(x, (H, W))
-
-        masks = F.interpolate(masks, size=(H, W), mode="bilinear", align_corners=True)
-        masks = unpadding(masks, (H_ori, W_ori))
+        
+        if self.image_size is None:
+            masks = F.interpolate(masks, size=(H, W), mode="bilinear", align_corners=True)
+            masks = unpadding(masks, (H_ori, W_ori))
+        else:
+            masks = F.interpolate(masks, size=(self.image_size[0], self.image_size[1]), mode="bilinear", align_corners=True)
 
         return masks
 

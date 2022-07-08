@@ -101,6 +101,11 @@ def create_model(model_name, args):
         decoder_options = args['standard_arguments']['decoder']
         encoder_options.update(args['special_arguments']['encoder'])
 
+        image_size = args['standard_arguments']['segmenter']['image_size']
+        patch_size = args['standard_arguments']['decoder']['patch_size']
+        num_patches = (image_size[0] // patch_size) ** 2
+        encoder_options.update({'embedding_dim': num_patches})
+
         segmenter_options = args['standard_arguments']['segmenter']
 
         model = models[model_name]['segmenter'](

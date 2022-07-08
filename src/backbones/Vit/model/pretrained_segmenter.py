@@ -23,10 +23,12 @@ class EncoderVit(ptv.ViT):
 
 
 class PreSegmenter(nn.Module):
-    def __init__(self, decoder: MaskTransformer, n_cls, image_size, fine_tune=False, encoder=None):
+    def __init__(self, decoder: MaskTransformer, n_cls, image_size, fine_tune=False, encoder=None, output_image_size=None):
         super().__init__()
         
         embedding_size = (image_size[0] // decoder.patch_size) ** 2
+        self.image_size = image_size
+        self.output_size = output_image_size
         self.encoder = EncoderVit(
             embedding_dim=embedding_size,
             model_dim=decoder.d_encoder,
@@ -58,10 +60,17 @@ class PreSegmenter(nn.Module):
         H, W = im.size(2), im.size(3)
         x = self.encoder(im)
         rough_masks = self.decoder(x, (H, W))
-        masks = F.interpolate(rough_masks, size=(H, W), mode="bilinear", align_corners=True)
-        # masks = F.interpolate(masks, size=(H, W), mode="nearest-exact")
 
-        masks = unpadding(masks, (H_ori, W_ori))
+        if self.output_size is None:
+            masks = F.interpolate(rough_masks, size=(H, W), mode="bilinear", align_corners=True)
+            masks = unpadding(masks, (H_ori, W_ori))
+        else:
+            masks = F.interpolate(rough_masks, size=(self.output_size[0], self.output_size[1]), mode="bilinear", align_corners=True)
+            
+        # masks = F.interpolate(rough_masks, size=(H, W), mode="bilinear", align_corners=True)
+        # # masks = F.interpolate(masks, size=(H, W), mode="nearest-exact")
+
+        # masks = unpadding(masks, (H_ori, W_ori))
 
         return masks
 

@@ -43,7 +43,10 @@ class LitModule(pl.LightningModule):
         self.num_workers = num_workers
         self.learning_rate = learning_rate
         self.batch_size = batch_size
-        self.loss_fn = DiceLoss(
+        self.loss_fn_train = DiceLoss(
+            mode='multiclass',
+        ) if loss_function is None else loss_function
+        self.loss_fn_val = DiceLoss(
             mode='multiclass',
         ) if loss_function is None else loss_function
         self.user_params = hparams
@@ -59,6 +62,8 @@ class LitModule(pl.LightningModule):
 
         self.best_vloss = float('inf')
         self.save_dir = save_dir
+
+        self.image_transform = torchvision.transforms.Resize((512, 512))
         
         self.model = model
 
@@ -200,8 +205,13 @@ class LitModule(pl.LightningModule):
      
     def training_step(self, train_batch, batch_idx):
         inputs, labels, times = train_batch
+
+        if isinstance(self.model, PreSegmenter):
+            # Increase image size
+            inputs = self.image_transform(inputs)
+
         outputs = self(inputs, times)
-        loss = self.loss_fn(outputs, labels.long())
+        loss = self.loss_fn_train(outputs, labels.long())
         self.log("metrics/batch/loss", loss, prog_bar=False)
 
         # Update metrics
@@ -223,7 +233,8 @@ class LitModule(pl.LightningModule):
     def validation_step(self, val_batch, batch_idx):
         vinputs, vlabels, vtimes = val_batch
         voutputs = self(vinputs, vtimes)
-        vloss = self.loss_fn(voutputs, vlabels.long())
+        vloss = self.loss_fn_val(voutputs, vlabels.long())
+        self.log("metrics/val/loss", vloss, prog_bar=False, on_step=False, on_epoch=True)
 
         # Update metrics
         self._accuracy_val(voutputs, vlabels.int())
@@ -237,19 +248,19 @@ class LitModule(pl.LightningModule):
             self.best_vloss = vloss
             self.save_model(vloss)
         
-        return {'loss': vloss.item()}
+        return vloss
 
     def on_validation_end(self):
         pass
 
     def validation_epoch_end(self, outputs):
         # Log metrics
-        loss = np.array([])
-        for results_dict in outputs:
-            loss = np.append(loss, results_dict["loss"])
+        # loss = np.array([])
+        # for results_dict in outputs:
+        #     loss = np.append(loss, results_dict["loss"])
         
-        # self.logger.experiment["val/loss"] = loss.mean()
-        self.log("metrics/val/loss", loss.mean(), prog_bar=True)
+        # # self.logger.experiment["val/loss"] = loss.mean()
+        # self.log("metrics/val/loss", loss.mean(), prog_bar=True)
         self.log("metrics/val/acc", self._accuracy_val.compute())
         self.log("metrics/val/precision", self._precision_val.compute())
         self.log("metrics/val/recall", self._recall_val.compute())
