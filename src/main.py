@@ -167,7 +167,9 @@ def main(hparams):
             model = create_model(args['model'], args)
 
             batch_size = hparams.batch_size if hparams.batch_size else args['batch_size']
-            
+
+            image_scale = None if 'segmenter' not in args['standard_arguments'].keys() \
+                else args['standard_arguments']['segmenter']['image_size']
             # Create lightning module
             lightning_module = LitModule(
                 model=model,
@@ -177,6 +179,7 @@ def main(hparams):
                 num_workers=hparams.num_workers,
                 learning_rate=hparams.learning_rate,
                 hparams=hparams,
+                image_scale=image_scale
             )
 
             # Create the trainer

@@ -97,7 +97,7 @@ standard_model_options = {
         'segmenter': {
             'n_cls': 20,
             'output_image_size': (128,128),
-            'image_size': (512, 512),
+            'image_size': (384, 384),
             'fine_tune': True,
         }
     }

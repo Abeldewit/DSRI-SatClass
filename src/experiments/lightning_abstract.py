@@ -37,6 +37,7 @@ class LitModule(pl.LightningModule):
         loss_function = None,
         save_dir = './models/',
         hparams=None,
+        image_scale=None,
     ):
         super().__init__()
         self.save_hyperparameters(hparams)
@@ -63,7 +64,10 @@ class LitModule(pl.LightningModule):
         self.best_vloss = float('inf')
         self.save_dir = save_dir
 
-        self.image_transform = torchvision.transforms.Resize((512, 512))
+        if image_scale is not None:
+            self.image_transform = torchvision.transforms.Resize((512, 512))
+        else:
+            self.image_transform = torchvision.transforms.Resize((128, 128))
         
         self.model = model
 
