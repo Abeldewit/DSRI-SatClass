@@ -65,7 +65,7 @@ class LitModule(pl.LightningModule):
         self.save_dir = save_dir
 
         if image_scale is not None:
-            self.image_transform = torchvision.transforms.Resize((512, 512))
+            self.image_transform = torchvision.transforms.Resize(image_scale)
         else:
             self.image_transform = torchvision.transforms.Resize((128, 128))
         
