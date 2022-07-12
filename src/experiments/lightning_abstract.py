@@ -212,7 +212,13 @@ class LitModule(pl.LightningModule):
 
         if isinstance(self.model, PreSegmenter):
             # Increase image size
-            inputs = self.image_transform(inputs)
+            if self.data_args['multi_temporal']:
+                og_shape = inputs.shape
+                inputs = inputs.view(inputs.shape[0], inputs.shape[1]*inputs.shape[2], inputs.shape[3], inputs.shape[4])
+                inputs = self.image_transform(inputs)
+                inputs = inputs.view(*og_shape[:3], inputs.shape[-2], inputs.shape[-1])
+            else:
+                inputs = self.image_transform(inputs)
 
         outputs = self(inputs, times)
         loss = self.loss_fn_train(outputs, labels.long())
@@ -238,7 +244,13 @@ class LitModule(pl.LightningModule):
         vinputs, vlabels, vtimes = val_batch
         if isinstance(self.model, PreSegmenter):
             # Increase image size
-            vinputs = self.image_transform(vinputs)
+            if self.data_args['multi_temporal']:
+                og_shape = vinputs.shape
+                vinputs = vinputs.view(vinputs.shape[0], vinputs.shape[1]*vinputs.shape[2], vinputs.shape[3], vinputs.shape[4])
+                vinputs = self.image_transform(vinputs)
+                vinputs = vinputs.view(*og_shape[:3], vinputs.shape[-2], vinputs.shape[-1])
+            else:
+                vinputs = self.image_transform(vinputs)
 
         voutputs = self(vinputs, vtimes)
         vloss = self.loss_fn_val(voutputs, vlabels.long())
@@ -286,7 +298,13 @@ class LitModule(pl.LightningModule):
         tinputs, tlabels, ttimes = test_batch
         if isinstance(self.model, PreSegmenter):
             # Increase image size
-            tinputs = self.image_transform(tinputs)
+            if self.data_args['multi_temporal']:
+                og_shape = tinputs.shape
+                tinputs = tinputs.view(tinputs.shape[0], tinputs.shape[1]*tinputs.shape[2], tinputs.shape[3], tinputs.shape[4])
+                tinputs = self.image_transform(tinputs)
+                tinputs = tinputs.view(*og_shape[:3], tinputs.shape[-2], tinputs.shape[-1])
+            else:
+                tinputs = self.image_transform(tinputs)
         toutputs = self(tinputs, ttimes)
 
         # Update metrics

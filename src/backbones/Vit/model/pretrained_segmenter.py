@@ -5,6 +5,7 @@ import torch.nn.functional as F
 import pytorch_pretrained_vit as ptv
 from pytorch_pretrained_vit.model import PositionalEmbedding1D
 from src.backbones.Vit.model.decoder import MaskTransformer
+from src.backbones.Vit.model.temporal_patch_embedder import TemporalPatchEmb
 
 from src.backbones.Vit.model.utils import padding, unpadding
 
@@ -23,18 +24,39 @@ class EncoderVit(ptv.ViT):
 
 
 class PreSegmenter(nn.Module):
-    def __init__(self, decoder: MaskTransformer, n_cls, image_size, fine_tune=False, encoder=None, output_image_size=None):
+    def __init__(
+        self, 
+        decoder: MaskTransformer, 
+        n_cls, 
+        image_size, 
+        fine_tune=True, 
+        encoder=None, 
+        output_image_size=None,
+        multi_temporal=False,
+        channels=3,
+    ):
         super().__init__()
         
         embedding_size = (image_size[0] // decoder.patch_size) ** 2
         self.image_size = image_size
         self.output_size = output_image_size
+        
+
         self.encoder = EncoderVit(
             embedding_dim=embedding_size,
             model_dim=decoder.d_encoder,
             name='L_16_imagenet1k', 
-            pretrained=True
+            pretrained=True,
         ) if encoder is None else encoder
+
+        if multi_temporal:
+            embedder = TemporalPatchEmb(
+                image_size,
+                decoder.patch_size,
+                decoder.d_encoder,
+                channels,
+            )
+            self.encoder.patch_embedding = embedder
 
         self.fine_tune = fine_tune
         if not self.fine_tune:
@@ -55,9 +77,9 @@ class PreSegmenter(nn.Module):
         return nwd_params
 
     def forward(self, im):
-        H_ori, W_ori = im.size(2), im.size(3)
+        H_ori, W_ori = im.size(-2), im.size(-1)
         im = padding(im, self.decoder.patch_size)
-        H, W = im.size(2), im.size(3)
+        H, W = im.size(-2), im.size(-1)
         x = self.encoder(im)
         rough_masks = self.decoder(x, (H, W))
 
@@ -65,12 +87,12 @@ class PreSegmenter(nn.Module):
             masks = F.interpolate(rough_masks, size=(H, W), mode="bilinear", align_corners=True)
             masks = unpadding(masks, (H_ori, W_ori))
         else:
-            masks = F.interpolate(rough_masks, size=(self.output_size[0], self.output_size[1]), mode="bilinear", align_corners=True)
+            masks = F.interpolate(rough_masks, size=(self.output_size[0], self.output_size[1]), mode="bicubic", align_corners=True)
             
         # masks = F.interpolate(rough_masks, size=(H, W), mode="bilinear", align_corners=True)
         # # masks = F.interpolate(masks, size=(H, W), mode="nearest-exact")
 
-        # masks = unpadding(masks, (H_ori, W_ori))
+        masks = unpadding(masks, (H_ori, W_ori))
 
         return masks
 
