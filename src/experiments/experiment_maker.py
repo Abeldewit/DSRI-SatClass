@@ -27,10 +27,10 @@ data_options = {
 }
 
 batch_size_options = {
-    'UNet': 128,
-    'UTAE': 4,
+    'UNet': (128, 0.05),
+    'UTAE': (4, 0.05),
     # 'ViT': 128,
-    'PViT': 4,
+    'PViT': (4, 0.001),
 }
 
 standard_model_options = {
@@ -160,7 +160,7 @@ combinations = [(*c, special_model_options[c[0]][c[1].replace('_no_cloud', '')])
 # Set data options
 combinations = [(c[0], *data_options[c[1]].values(), *c[2:]) for c in combinations]
 
-combinations = [(*c[:4], batch_size_options[c[0]], *c[4:]) for c in combinations]
+combinations = [(*c[:4], *batch_size_options[c[0]], *c[4:]) for c in combinations]
 
 # # All arguments
 keys = [
@@ -169,6 +169,7 @@ keys = [
     'multi_temporal',
     'remove_clouds',
     'batch_size',
+    'learning_rate',
     'fold',
     'standard_arguments',
     'special_arguments',

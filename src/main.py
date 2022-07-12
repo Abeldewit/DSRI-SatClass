@@ -165,6 +165,7 @@ def main(hparams):
             # Create the model
             model = create_model(args['model'], args)
 
+            hparams.learning_rate = hparams.learning_rate if hparams.learning_rate else args['learning_rate']
             batch_size = hparams.batch_size if hparams.batch_size else args['batch_size']
 
             image_scale = None if 'segmenter' not in args['standard_arguments'].keys() \
@@ -210,7 +211,7 @@ if __name__ == "__main__":
     parser.add_argument('--num_workers', type=int, default=0)
     parser.add_argument('--path', type=str, default='/workspace/persistent/data/PASTIS')
     parser.add_argument('--patience', type=int, default=10)
-    parser.add_argument('--learning_rate', type=float, default=0.001)
+    parser.add_argument('--learning_rate', type=float, default=None)
     parser.add_argument('--fast_dev', default=False)
     parser.add_argument('--logger', type=str, default='tensorboard')
     parser.add_argument('--begin', type=int, default=0)
