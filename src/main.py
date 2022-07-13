@@ -188,6 +188,8 @@ def main(hparams):
             # sample_img = torch.rand((1, 3, 128, 128))
             # trainer.logger.experiment.add_graph(lightning_module.model, sample_img)
 
+            trainer.validate(lightning_module)
+
             # Run the experiment
             trainer.fit(lightning_module)
 

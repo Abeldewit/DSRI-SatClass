@@ -209,7 +209,7 @@ class LitModule(pl.LightningModule):
      
     def training_step(self, train_batch, batch_idx):
         inputs, labels, times = train_batch
-
+        self.model.train(True)
         if isinstance(self.model, PreSegmenter):
             # Increase image size
             if self.data_args['multi_temporal']:
@@ -242,6 +242,7 @@ class LitModule(pl.LightningModule):
 
     def validation_step(self, val_batch, batch_idx):
         vinputs, vlabels, vtimes = val_batch
+        self.model.eval()
         if isinstance(self.model, PreSegmenter):
             # Increase image size
             if self.data_args['multi_temporal']:
@@ -254,7 +255,10 @@ class LitModule(pl.LightningModule):
 
         voutputs = self(vinputs, vtimes)
         vloss = self.loss_fn_val(voutputs, vlabels.long())
-        self.log("metrics/val/loss", vloss, prog_bar=False, on_step=False, on_epoch=True)
+        if hasattr(self, 'optimizer'):
+            self.log("metrics/val/loss", vloss, prog_bar=False, on_step=False, on_epoch=True)
+        else:
+            self.log("metrics/val/loss", vloss, prog_bar=True, on_step=True, on_epoch=True)
 
         # Update metrics
         self._accuracy_val(voutputs, vlabels.int())
@@ -264,7 +268,7 @@ class LitModule(pl.LightningModule):
         self._jaccard_val(voutputs, vlabels.int())
 
         # Save model if validation loss is lower
-        if vloss < self.best_vloss:
+        if vloss < self.best_vloss and hasattr(self, 'optimizer'):
             self.best_vloss = vloss
             self.save_model(vloss)
         
