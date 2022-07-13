@@ -217,7 +217,7 @@ if __name__ == "__main__":
     parser.add_argument('--begin', type=int, default=0)
     parser.add_argument('--end', type=int, default=None)
     parser.add_argument('--batch_size', type=int, default=None)
-    parser.add_argument('--min_delta', type=float, default=0.0)
+    parser.add_argument('--min_delta', type=float, default=0.001)
     parser.add_argument('--model_only', type=str, default='')
     parser.add_argument('--log_every_n_steps', type=int, default=50)
     parser.add_argument('--overfit_batches', type=int, default=0)
