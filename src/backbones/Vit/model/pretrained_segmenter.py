@@ -66,6 +66,9 @@ class PreSegmenter(nn.Module):
         self.decoder = decoder
         self.n_cls = n_cls
 
+    def __repr__(self):
+        return "PreSegmenter"
+
     @torch.jit.ignore
     def no_weight_decay(self):
         def append_prefix_no_weight_decay(prefix, module):

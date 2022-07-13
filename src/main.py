@@ -212,7 +212,7 @@ if __name__ == "__main__":
     parser.add_argument('--devices', type=int, default=1)
     parser.add_argument('--num_workers', type=int, default=0)
     parser.add_argument('--path', type=str, default='/workspace/persistent/data/PASTIS')
-    parser.add_argument('--patience', type=int, default=10)
+    parser.add_argument('--patience', type=int, default=5)
     parser.add_argument('--learning_rate', type=float, default=None)
     parser.add_argument('--fast_dev', default=False)
     parser.add_argument('--logger', type=str, default='tensorboard')
@@ -225,7 +225,7 @@ if __name__ == "__main__":
     parser.add_argument('--overfit_batches', type=int, default=0)
     parser.add_argument('--monitor', type=str, default='metrics/val/loss')
     parser.add_argument('--monitor_mode', type=str, default='min')
-    parser.add_argument('--norm', type=bool, default=False)
+    parser.add_argument('--norm', type=bool, default=True)
     parser.add_argument('--fold', type=int, default=None)
     
     args = parser.parse_args()

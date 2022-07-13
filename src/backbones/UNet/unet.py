@@ -70,24 +70,8 @@ class UNet(nn.Module):
 
         self.out = nn.Conv2d(self.dec_channels[-1], self.num_cls, kernel_size=1, padding=0)
 
-
-        # """ Encoder """
-        # self.e1 = encoder_block(3, 64)
-        # self.e2 = encoder_block(64, 128)
-        # self.e3 = encoder_block(128, 256)
-        # self.e4 = encoder_block(256, 512)
-
-        # """ Bottleneck """
-        # self.b = conv_block(512, 1024)
-
-        # """ Decoder """
-        # self.d1 = decoder_block(1024, 512)
-        # self.d2 = decoder_block(512, 256)
-        # self.d3 = decoder_block(256, 128)
-        # self.d4 = decoder_block(128, 64)
-
-        # """ Output """
-        # self.out = nn.Conv2d(64, 19, kernel_size=1, padding=0)
+    def __str__(self):
+        return f"UNet"
 
     def forward(self, x):
 

@@ -129,6 +129,14 @@ class UTAE(nn.Module):
         self.temporal_aggregator = Temporal_Aggregator(mode=agg_mode)
         self.out_conv = ConvBlock(nkernels=[decoder_widths[0]] + out_conv, padding_mode=padding_mode)
 
+    def __str__(self):
+        return (
+            f"UTAE(input_dim={self.in_conv.nkernels[0]}, "
+            f"n_head={self.n_head}, "
+            f"d_model={self.d_model}, "
+            f"d_k={self.d_k}, "
+        )
+
     def forward(self, input, batch_positions=None, return_att=False):
         pad_mask = (
             (input == self.pad_value).all(dim=-1).all(dim=-1).all(dim=-1)
