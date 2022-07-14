@@ -32,7 +32,7 @@ class LitModule(pl.LightningModule):
         path: str,
         num_workers=4,
         batch_size=4,
-        learning_rate=0.05,
+        learning_rate=None,
         # loss_function = torch.nn.CrossEntropyLoss(label_smoothing=.1),
         loss_function = None,
         save_dir = './models/',

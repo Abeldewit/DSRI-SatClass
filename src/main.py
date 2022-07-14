@@ -166,6 +166,9 @@ def main(hparams):
             model = create_model(args['model'], args)
 
             hparams.learning_rate = hparams.learning_rate if hparams.learning_rate else args['learning_rate']
+            learning_rate = args['learning_rate'] if 'learning_rate' in args else hparams.learning_rate
+            print("using learning rate: {}".format(learning_rate))
+
             batch_size = hparams.batch_size if hparams.batch_size else args['batch_size']
 
             image_scale = None if 'segmenter' not in args['standard_arguments'].keys() \
@@ -177,7 +180,7 @@ def main(hparams):
                 path=hparams.path,
                 batch_size=batch_size,
                 num_workers=hparams.num_workers,
-                learning_rate=hparams.learning_rate,
+                learning_rate=learning_rate,
                 hparams=hparams,
                 image_scale=image_scale
             )
