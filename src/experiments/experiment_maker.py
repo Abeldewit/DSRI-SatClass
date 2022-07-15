@@ -27,10 +27,10 @@ data_options = {
 }
 
 batch_size_options = {
-    'UNet': (128, 0.05),
-    'UTAE': (4, 0.05),
+    'UNet': (128, 0.001),
+    'UTAE': (4, 0.001),
     # 'ViT': 128,
-    'PViT': (4, 0.001),
+    'PViT': (4, 0.0005),
 }
 
 standard_model_options = {
@@ -125,8 +125,8 @@ special_model_options = {
     #     'spec_no_temp': {'encoder': {'channels': 10}},
     # },
     'PViT': {
-        'rgb_no_temp': {'encoder': {'pretrained': True, 'in_channels': 3}},
-        'spec_no_temp': {'encoder': {'pretrained': False, 'in_channels': 10}},
+        # 'rgb_no_temp': {'encoder': {'pretrained': True, 'in_channels': 3}},
+        # 'spec_no_temp': {'encoder': {'pretrained': False, 'in_channels': 10}},
         'rgb_temp': {
             'encoder': {'pretrained': True, 'in_channels': 3},
             'segmenter': {'multi_temporal': True},
