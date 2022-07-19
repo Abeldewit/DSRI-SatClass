@@ -133,7 +133,7 @@ special_model_options = {
         },
         'spec_temp': {
             'encoder': {'pretrained': True, 'in_channels': 10},
-            'segmenter': {'multi_temporal': True},
+            'segmenter': {'multi_temporal': True, 'channels': 10},
         },
     }
 }
