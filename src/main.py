@@ -6,6 +6,7 @@ from argparse import ArgumentParser
 from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 import json
 from pyifttt.webhook import send_notification
+IFTTT_KEY = '0HJNuEQmbg6-E1ri-eOg5'
 
 from pytorch_lightning.loggers import NeptuneLogger, TensorBoardLogger
 
@@ -159,11 +160,18 @@ def create_trainer(hparams, exp):
 
 def main(hparams):
     experiment_iter = experiment_generator(hparams)
-
+    
+    send_notification(event_name='python_notification', key=IFTTT_KEY, data={'value1': 'Starting'})
     try:
         for exp, args, data_args in experiment_iter:
             # Create the model
             model = create_model(args['model'], args)
+
+            send_notification(
+                event_name='python_notification',
+                key=IFTTT_KEY, 
+                data={'value1': f"Started:{exp}", 'value2': args['model']}
+            )
 
             hparams.learning_rate = hparams.learning_rate if hparams.learning_rate else args['learning_rate']
             learning_rate = args['learning_rate'] if 'learning_rate' in args else hparams.learning_rate
@@ -198,6 +206,12 @@ def main(hparams):
 
             # Test the model
             trainer.test(lightning_module)
+
+            send_notification(
+                event_name='python_notification',
+                key=IFTTT_KEY, 
+                data={'value1': f"Finished: {exp}", 'value2': args['model']}
+            )
             
     except KeyboardInterrupt:
         print('Interrupted')
@@ -205,6 +219,14 @@ def main(hparams):
             sys.exit(0)
         except SystemExit:
             os._exit(0)
+
+    except Exception as e:
+        send_notification(
+            event_name='python_notification',
+            key=IFTTT_KEY, 
+            data={'value1': f"Crashed: {exp}", 'value2': args['model']}
+        )
+
 
 
 
