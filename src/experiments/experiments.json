@@ -1265,7 +1265,7 @@
         "multi_temporal": true,
         "remove_clouds": false,
         "batch_size": 4,
-        "learning_rate": 0.0005,
+        "learning_rate": 0.001,
         "fold": 1,
         "standard_arguments": {
             "encoder": {
@@ -1313,7 +1313,7 @@
         "multi_temporal": true,
         "remove_clouds": false,
         "batch_size": 4,
-        "learning_rate": 0.0005,
+        "learning_rate": 0.001,
         "fold": 2,
         "standard_arguments": {
             "encoder": {
@@ -1361,7 +1361,7 @@
         "multi_temporal": true,
         "remove_clouds": false,
         "batch_size": 4,
-        "learning_rate": 0.0005,
+        "learning_rate": 0.001,
         "fold": 3,
         "standard_arguments": {
             "encoder": {
@@ -1409,7 +1409,7 @@
         "multi_temporal": true,
         "remove_clouds": false,
         "batch_size": 4,
-        "learning_rate": 0.0005,
+        "learning_rate": 0.001,
         "fold": 4,
         "standard_arguments": {
             "encoder": {
@@ -1457,7 +1457,7 @@
         "multi_temporal": true,
         "remove_clouds": false,
         "batch_size": 4,
-        "learning_rate": 0.0005,
+        "learning_rate": 0.001,
         "fold": 5,
         "standard_arguments": {
             "encoder": {
@@ -1505,7 +1505,7 @@
         "multi_temporal": true,
         "remove_clouds": true,
         "batch_size": 4,
-        "learning_rate": 0.0005,
+        "learning_rate": 0.001,
         "fold": 1,
         "standard_arguments": {
             "encoder": {
@@ -1553,7 +1553,7 @@
         "multi_temporal": true,
         "remove_clouds": true,
         "batch_size": 4,
-        "learning_rate": 0.0005,
+        "learning_rate": 0.001,
         "fold": 2,
         "standard_arguments": {
             "encoder": {
@@ -1601,7 +1601,7 @@
         "multi_temporal": true,
         "remove_clouds": true,
         "batch_size": 4,
-        "learning_rate": 0.0005,
+        "learning_rate": 0.001,
         "fold": 3,
         "standard_arguments": {
             "encoder": {
@@ -1649,7 +1649,7 @@
         "multi_temporal": true,
         "remove_clouds": true,
         "batch_size": 4,
-        "learning_rate": 0.0005,
+        "learning_rate": 0.001,
         "fold": 4,
         "standard_arguments": {
             "encoder": {
@@ -1697,7 +1697,7 @@
         "multi_temporal": true,
         "remove_clouds": true,
         "batch_size": 4,
-        "learning_rate": 0.0005,
+        "learning_rate": 0.001,
         "fold": 5,
         "standard_arguments": {
             "encoder": {
@@ -1745,7 +1745,7 @@
         "multi_temporal": true,
         "remove_clouds": false,
         "batch_size": 4,
-        "learning_rate": 0.0005,
+        "learning_rate": 0.001,
         "fold": 1,
         "standard_arguments": {
             "encoder": {
@@ -1794,7 +1794,7 @@
         "multi_temporal": true,
         "remove_clouds": false,
         "batch_size": 4,
-        "learning_rate": 0.0005,
+        "learning_rate": 0.001,
         "fold": 2,
         "standard_arguments": {
             "encoder": {
@@ -1843,7 +1843,7 @@
         "multi_temporal": true,
         "remove_clouds": false,
         "batch_size": 4,
-        "learning_rate": 0.0005,
+        "learning_rate": 0.001,
         "fold": 3,
         "standard_arguments": {
             "encoder": {
@@ -1892,7 +1892,7 @@
         "multi_temporal": true,
         "remove_clouds": false,
         "batch_size": 4,
-        "learning_rate": 0.0005,
+        "learning_rate": 0.001,
         "fold": 4,
         "standard_arguments": {
             "encoder": {
@@ -1941,7 +1941,7 @@
         "multi_temporal": true,
         "remove_clouds": false,
         "batch_size": 4,
-        "learning_rate": 0.0005,
+        "learning_rate": 0.001,
         "fold": 5,
         "standard_arguments": {
             "encoder": {
@@ -1990,7 +1990,7 @@
         "multi_temporal": true,
         "remove_clouds": true,
         "batch_size": 4,
-        "learning_rate": 0.0005,
+        "learning_rate": 0.001,
         "fold": 1,
         "standard_arguments": {
             "encoder": {
@@ -2039,7 +2039,7 @@
         "multi_temporal": true,
         "remove_clouds": true,
         "batch_size": 4,
-        "learning_rate": 0.0005,
+        "learning_rate": 0.001,
         "fold": 2,
         "standard_arguments": {
             "encoder": {
@@ -2088,7 +2088,7 @@
         "multi_temporal": true,
         "remove_clouds": true,
         "batch_size": 4,
-        "learning_rate": 0.0005,
+        "learning_rate": 0.001,
         "fold": 3,
         "standard_arguments": {
             "encoder": {
@@ -2137,7 +2137,7 @@
         "multi_temporal": true,
         "remove_clouds": true,
         "batch_size": 4,
-        "learning_rate": 0.0005,
+        "learning_rate": 0.001,
         "fold": 4,
         "standard_arguments": {
             "encoder": {
@@ -2186,7 +2186,7 @@
         "multi_temporal": true,
         "remove_clouds": true,
         "batch_size": 4,
-        "learning_rate": 0.0005,
+        "learning_rate": 0.001,
         "fold": 5,
         "standard_arguments": {
             "encoder": {
