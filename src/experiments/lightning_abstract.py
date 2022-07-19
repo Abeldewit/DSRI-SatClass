@@ -189,7 +189,7 @@ class LitModule(pl.LightningModule):
             optimizer,
             mode=self.user_params.monitor_mode,
             factor=0.5,
-            patience=np.ceil(self.user_params.patience / 2),,
+            patience=np.ceil(self.user_params.patience / 2),
             verbose=True,
             threshold=self.user_params.min_delta,
             threshold_mode='rel',
