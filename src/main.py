@@ -198,19 +198,24 @@ def main(hparams):
             # Create the trainer
             trainer = create_trainer(hparams, exp)
             lr_finder = trainer.tuner.lr_find(test_lightning_module)
-            
+
+            learning_rate_found = float(lr_finder.suggestion())
+            print("learning rate found: {}".format(learning_rate_found))
+            del test_lightning_module, trainer, lr_finder
+
+            trainer = create_trainer(hparams, exp)
             lightning_module = LitModule(
                 model=model,
                 data_args=data_args,
                 path=hparams.path,
                 batch_size=batch_size,
                 num_workers=hparams.num_workers,
-                learning_rate=lr_finder.suggestion,
+                learning_rate=learning_rate_found,
                 hparams=hparams,
                 image_scale=image_scale
             )
 
-            # trainer.validate(lightning_module)
+            trainer.validate(lightning_module)
 
             # Run the experiment
             trainer.fit(lightning_module)
