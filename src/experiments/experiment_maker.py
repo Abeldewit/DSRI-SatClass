@@ -27,8 +27,8 @@ data_options = {
 }
 
 batch_size_options = {
-    'UNet': (128, 0.001),
-    'UTAE': (4, 0.001),
+    'UNet': (128, 8e-5),
+    'UTAE': (4, 0.2290867652767775),
     # 'ViT': 128,
     'PViT': (4, 0.001),
 }
@@ -106,12 +106,12 @@ standard_model_options = {
 special_model_options = {
     'UNet': {
         'rgb_no_temp': {
-            'enc_channels': (3, 64, 128,), 
+            'enc_channels': (3, 64, 64, 128,), 
             'bottleneck': 512, 
             'num_classes': 20
         },
         'spec_no_temp': {
-            'enc_channels': (10, 64, 128),
+            'enc_channels': (10, 64, 64, 128),
             'bottleneck': 512,
             'num_classes': 20,
         }

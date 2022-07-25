@@ -153,6 +153,8 @@ def create_trainer(hparams, exp):
         fast_dev_run=hparams.fast_dev,
         log_every_n_steps=hparams.log_every_n_steps,
         overfit_batches=hparams.overfit_batches,
+        # auto_lr_find=hparams.auto_lr_find,
+        auto_lr_find=True,
         # deterministic=True,
     )
     return trainer
@@ -182,7 +184,7 @@ def main(hparams):
             image_scale = None if 'segmenter' not in args['standard_arguments'].keys() \
                 else args['standard_arguments']['segmenter']['image_size']
             # Create lightning module
-            lightning_module = LitModule(
+            test_lightning_module = LitModule(
                 model=model,
                 data_args=data_args,
                 path=hparams.path,
@@ -195,11 +197,20 @@ def main(hparams):
 
             # Create the trainer
             trainer = create_trainer(hparams, exp)
+            lr_finder = trainer.tuner.lr_find(test_lightning_module)
+            
+            lightning_module = LitModule(
+                model=model,
+                data_args=data_args,
+                path=hparams.path,
+                batch_size=batch_size,
+                num_workers=hparams.num_workers,
+                learning_rate=lr_finder.suggestion,
+                hparams=hparams,
+                image_scale=image_scale
+            )
 
-            # sample_img = torch.rand((1, 3, 128, 128))
-            # trainer.logger.experiment.add_graph(lightning_module.model, sample_img)
-
-            trainer.validate(lightning_module)
+            # trainer.validate(lightning_module)
 
             # Run the experiment
             trainer.fit(lightning_module)
@@ -224,8 +235,9 @@ def main(hparams):
         send_notification(
             event_name='python_notification',
             key=IFTTT_KEY, 
-            data={'value1': f"Crashed: {exp}", 'value2': args['model']}
+            data={'value1': "Crashed: {}".format(exp+':'+args['model']), 'value2': str(e)}
         )
+        print(e)
 
 
 
@@ -252,6 +264,7 @@ if __name__ == "__main__":
     parser.add_argument('--monitor_mode', type=str, default='min')
     parser.add_argument('--norm', type=bool, default=True)
     parser.add_argument('--fold', type=int, default=None)
+    parser.add_argument('--auto_lr_find', type=bool, default=False)
     
     args = parser.parse_args()
     

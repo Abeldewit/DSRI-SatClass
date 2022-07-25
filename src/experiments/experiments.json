@@ -5,7 +5,7 @@
         "multi_temporal": false,
         "remove_clouds": false,
         "batch_size": 128,
-        "learning_rate": 0.001,
+        "learning_rate": 8e-05,
         "fold": 1,
         "standard_arguments": {
             "num_classes": 20
@@ -26,7 +26,7 @@
         "multi_temporal": false,
         "remove_clouds": false,
         "batch_size": 128,
-        "learning_rate": 0.001,
+        "learning_rate": 8e-05,
         "fold": 2,
         "standard_arguments": {
             "num_classes": 20
@@ -47,7 +47,7 @@
         "multi_temporal": false,
         "remove_clouds": false,
         "batch_size": 128,
-        "learning_rate": 0.001,
+        "learning_rate": 8e-05,
         "fold": 3,
         "standard_arguments": {
             "num_classes": 20
@@ -68,7 +68,7 @@
         "multi_temporal": false,
         "remove_clouds": false,
         "batch_size": 128,
-        "learning_rate": 0.001,
+        "learning_rate": 8e-05,
         "fold": 4,
         "standard_arguments": {
             "num_classes": 20
@@ -89,7 +89,7 @@
         "multi_temporal": false,
         "remove_clouds": false,
         "batch_size": 128,
-        "learning_rate": 0.001,
+        "learning_rate": 8e-05,
         "fold": 5,
         "standard_arguments": {
             "num_classes": 20
@@ -110,7 +110,7 @@
         "multi_temporal": false,
         "remove_clouds": true,
         "batch_size": 128,
-        "learning_rate": 0.001,
+        "learning_rate": 8e-05,
         "fold": 1,
         "standard_arguments": {
             "num_classes": 20
@@ -131,7 +131,7 @@
         "multi_temporal": false,
         "remove_clouds": true,
         "batch_size": 128,
-        "learning_rate": 0.001,
+        "learning_rate": 8e-05,
         "fold": 2,
         "standard_arguments": {
             "num_classes": 20
@@ -152,7 +152,7 @@
         "multi_temporal": false,
         "remove_clouds": true,
         "batch_size": 128,
-        "learning_rate": 0.001,
+        "learning_rate": 8e-05,
         "fold": 3,
         "standard_arguments": {
             "num_classes": 20
@@ -173,7 +173,7 @@
         "multi_temporal": false,
         "remove_clouds": true,
         "batch_size": 128,
-        "learning_rate": 0.001,
+        "learning_rate": 8e-05,
         "fold": 4,
         "standard_arguments": {
             "num_classes": 20
@@ -194,7 +194,7 @@
         "multi_temporal": false,
         "remove_clouds": true,
         "batch_size": 128,
-        "learning_rate": 0.001,
+        "learning_rate": 8e-05,
         "fold": 5,
         "standard_arguments": {
             "num_classes": 20
@@ -215,7 +215,7 @@
         "multi_temporal": false,
         "remove_clouds": false,
         "batch_size": 128,
-        "learning_rate": 0.001,
+        "learning_rate": 8e-05,
         "fold": 1,
         "standard_arguments": {
             "num_classes": 20
@@ -236,7 +236,7 @@
         "multi_temporal": false,
         "remove_clouds": false,
         "batch_size": 128,
-        "learning_rate": 0.001,
+        "learning_rate": 8e-05,
         "fold": 2,
         "standard_arguments": {
             "num_classes": 20
@@ -257,7 +257,7 @@
         "multi_temporal": false,
         "remove_clouds": false,
         "batch_size": 128,
-        "learning_rate": 0.001,
+        "learning_rate": 8e-05,
         "fold": 3,
         "standard_arguments": {
             "num_classes": 20
@@ -278,7 +278,7 @@
         "multi_temporal": false,
         "remove_clouds": false,
         "batch_size": 128,
-        "learning_rate": 0.001,
+        "learning_rate": 8e-05,
         "fold": 4,
         "standard_arguments": {
             "num_classes": 20
@@ -299,7 +299,7 @@
         "multi_temporal": false,
         "remove_clouds": false,
         "batch_size": 128,
-        "learning_rate": 0.001,
+        "learning_rate": 8e-05,
         "fold": 5,
         "standard_arguments": {
             "num_classes": 20
@@ -320,7 +320,7 @@
         "multi_temporal": false,
         "remove_clouds": true,
         "batch_size": 128,
-        "learning_rate": 0.001,
+        "learning_rate": 8e-05,
         "fold": 1,
         "standard_arguments": {
             "num_classes": 20
@@ -341,7 +341,7 @@
         "multi_temporal": false,
         "remove_clouds": true,
         "batch_size": 128,
-        "learning_rate": 0.001,
+        "learning_rate": 8e-05,
         "fold": 2,
         "standard_arguments": {
             "num_classes": 20
@@ -362,7 +362,7 @@
         "multi_temporal": false,
         "remove_clouds": true,
         "batch_size": 128,
-        "learning_rate": 0.001,
+        "learning_rate": 8e-05,
         "fold": 3,
         "standard_arguments": {
             "num_classes": 20
@@ -383,7 +383,7 @@
         "multi_temporal": false,
         "remove_clouds": true,
         "batch_size": 128,
-        "learning_rate": 0.001,
+        "learning_rate": 8e-05,
         "fold": 4,
         "standard_arguments": {
             "num_classes": 20
@@ -404,7 +404,7 @@
         "multi_temporal": false,
         "remove_clouds": true,
         "batch_size": 128,
-        "learning_rate": 0.001,
+        "learning_rate": 8e-05,
         "fold": 5,
         "standard_arguments": {
             "num_classes": 20
