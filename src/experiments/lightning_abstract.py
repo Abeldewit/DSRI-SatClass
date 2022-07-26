@@ -197,7 +197,7 @@ class LitModule(pl.LightningModule):
             "name": None,
         }
 
-        return {'optimizer': optimizer} #, 'lr_scheduler': lr_scheduler_config}
+        return {'optimizer': optimizer, 'lr_scheduler': lr_scheduler_config}
      
     def training_step(self, train_batch, batch_idx):
         inputs, labels, times = train_batch
