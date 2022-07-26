@@ -207,13 +207,13 @@ class PASTIS(tdata.Dataset):
             mask = TF.vflip(mask)
 
         # Randomly rotate the image
-        if random.random() > 0.5:
+        if random.random() > 0.01:
             angle = random.randint(-180, 180)
             if self.multi_temporal:
-                image = _transform_temporal(image, TF.rotate, angle=angle)
+                image = _transform_temporal(image, TF.rotate, angle=angle, fill=0)
             else:
-                image = TF.rotate(image, angle)
-            mask = TF.rotate(mask, angle)
+                image = TF.rotate(image, angle, fill=0)
+            mask = TF.rotate(mask.view((1, *mask.shape)), angle, fill=0)[0]
 
         return image, mask
 
