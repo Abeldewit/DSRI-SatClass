@@ -29,6 +29,8 @@ class TemporalPatchEmb(nn.Module):
             kernel_size=(channels, patch_size, patch_size), 
             stride=(channels, patch_size, patch_size)
         )
+        
+        self.proj.requires_grad_(False)
     
     def forward(self, x):
         # We get a tensor of shape (B, T, C, H, W)

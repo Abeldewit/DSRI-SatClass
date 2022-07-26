@@ -9,7 +9,8 @@ import json
 from datetime import datetime
 import multiprocessing as mp
 import torchvision
-
+import torchvision.transforms.functional as TF
+import random
 
 class PASTIS(tdata.Dataset):
     def __init__(
@@ -27,6 +28,7 @@ class PASTIS(tdata.Dataset):
         pre_load = False,
         remove_clouds = False,
         norm = True, # Normalize the data
+        augment = False, # Augment the data
     ) -> None:
         """
         Data loader for PASTIS dataset. With customization options for the data output. 
@@ -55,6 +57,7 @@ class PASTIS(tdata.Dataset):
         self.device = device
         self.pre_load = pre_load
         self.done_loading = False if self.pre_load else True
+        self.augment = augment
 
         # Parameters 
         self.max_t = 61 # max time steps for padding
@@ -102,8 +105,6 @@ class PASTIS(tdata.Dataset):
 
         self.loaded_data = completed
 
-
-
     def __len__(self) -> int:
         return len(self.combination)   
         
@@ -125,7 +126,6 @@ class PASTIS(tdata.Dataset):
             raise TypeError('Item must be an integer.')
         if item >= len(self):
             raise IndexError('Item out of range.')
-
 
         # If we're pre-loading, skipp all below and retrieve from ram
         if self.pre_load and self.done_loading:
@@ -172,8 +172,34 @@ class PASTIS(tdata.Dataset):
 
         if hasattr(self, 'norm'):
             x = self.norm(x)
+
+        if self.augment:
+            x, y = self._augment(x, y)
         
         return x, y, time
+
+    def _augment(self, image, mask):
+        
+        # Randomly flip the image
+        if random.random() > 0.5:
+            image = TF.hflip(image)
+            mask = TF.hflip(mask)
+        
+        # Randomly flip the image vertically
+        if random.random() > 0.5:
+            image = TF.vflip(image)
+            mask = TF.vflip(mask)
+
+        # Randomly rotate the image
+        if random.random() > 0.5:
+            angle = random.randint(-180, 180)
+            image = TF.rotate(image, angle)
+            mask = TF.rotate(mask, angle)
+        
+        image = TF.to_tensor(image)
+        mask = TF.to_tensor(mask)
+        return image, mask
+
 
     def _create_combination(self):
         # Create the feature sets based on the fold number

@@ -107,22 +107,14 @@ class LitModule(pl.LightningModule):
 
         self.log('lr', optimizer.param_groups[0]['lr'], prog_bar=True)
 
-    # def on_after_backward(self):
-    #     if isinstance(self.logger,TensorBoardLogger):
-    #         global_step = self.global_step
-    #         for name, param in self.model.named_parameters():
-    #             self.logger.experiment.add_histogram(name, param, global_step)
-    #             if param.requires_grad:
-    #                 if param.grad is not None:
-    #                     self.logger.experiment.add_histogram(f"{name}_grad", param.grad, global_step)
-
     def train_dataloader(self):
         train_set = PASTIS(
             **self.standard_args, 
             **self.data_args, 
             subset_type='train',
             shuffle=True,
-            norm=self.user_params.norm
+            norm=self.user_params.norm,
+            augment=True,
         )
         train_loader = DataLoader(
             train_set,
@@ -130,7 +122,7 @@ class LitModule(pl.LightningModule):
             shuffle=True,
             num_workers=self.num_workers,
             pin_memory=True,
-            prefetch_factor=2
+            prefetch_factor=2,
         )
         return train_loader
 
