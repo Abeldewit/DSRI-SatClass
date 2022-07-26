@@ -30,7 +30,7 @@ batch_size_options = {
     'UNet': (128, 8e-5),
     'UTAE': (4, 0.2290867652767775),
     # 'ViT': 128,
-    'PViT': (4, 0.001),
+    'PViT': (4, 4e-4),
 }
 
 standard_model_options = {

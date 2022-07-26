@@ -184,24 +184,24 @@ def main(hparams):
             image_scale = None if 'segmenter' not in args['standard_arguments'].keys() \
                 else args['standard_arguments']['segmenter']['image_size']
             # Create lightning module
-            test_lightning_module = LitModule(
-                model=model,
-                data_args=data_args,
-                path=hparams.path,
-                batch_size=batch_size,
-                num_workers=hparams.num_workers,
-                learning_rate=learning_rate,
-                hparams=hparams,
-                image_scale=image_scale
-            )
+            # lightning_module = LitModule(
+            #     model=model,
+            #     data_args=data_args,
+            #     path=hparams.path,
+            #     batch_size=batch_size,
+            #     num_workers=hparams.num_workers,
+            #     learning_rate=learning_rate,
+            #     hparams=hparams,
+            #     image_scale=image_scale
+            # )
 
-            # Create the trainer
-            trainer = create_trainer(hparams, exp)
-            lr_finder = trainer.tuner.lr_find(test_lightning_module)
+            # # Create the trainer
+            # trainer = create_trainer(hparams, exp)
+            # lr_finder = trainer.tuner.lr_find(lightning_module)
 
-            learning_rate_found = float(lr_finder.suggestion())
-            print("learning rate found: {}".format(learning_rate_found))
-            del test_lightning_module, trainer, lr_finder
+            # learning_rate_found = float(lr_finder.suggestion())
+            # print("learning rate found: {}".format(learning_rate_found))
+            # del lightning_module, trainer, lr_finder
 
             trainer = create_trainer(hparams, exp)
             lightning_module = LitModule(
@@ -210,7 +210,7 @@ def main(hparams):
                 path=hparams.path,
                 batch_size=batch_size,
                 num_workers=hparams.num_workers,
-                learning_rate=learning_rate_found,
+                learning_rate=learning_rate,
                 hparams=hparams,
                 image_scale=image_scale
             )
