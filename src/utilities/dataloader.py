@@ -3,7 +3,6 @@ import numpy as np
 import torch.utils.data as tdata
 from torch.utils.data import DataLoader
 import torch
-from .util_funcs import pad_tensor
 import os
 import json
 from datetime import datetime
@@ -11,6 +10,8 @@ import multiprocessing as mp
 import torchvision
 import torchvision.transforms.functional as TF
 import random
+
+import matplotlib.pyplot as plt
 
 class PASTIS(tdata.Dataset):
     def __init__(
@@ -179,25 +180,41 @@ class PASTIS(tdata.Dataset):
         return x, y, time
 
     def _augment(self, image, mask):
+
+        # The images that are multi-tempral have to be transformed
+        # on a time to time basis
+        def _transform_temporal(image, transform, **kwargs):
+            new_im = []
+            for i in range(image.shape[0]):
+                _t = transform(image[i], **kwargs)
+                new_im.append(_t)
+            return torch.stack(new_im, axis=0)
         
         # Randomly flip the image
         if random.random() > 0.5:
-            image = TF.hflip(image)
+            if self.multi_temporal:
+                image = _transform_temporal(image, TF.hflip)
+            else: 
+                image = TF.hflip(image)
             mask = TF.hflip(mask)
         
         # Randomly flip the image vertically
         if random.random() > 0.5:
-            image = TF.vflip(image)
+            if self.multi_temporal:
+                image = _transform_temporal(image, TF.vflip)
+            else:
+                image = TF.vflip(image)
             mask = TF.vflip(mask)
 
         # Randomly rotate the image
         if random.random() > 0.5:
             angle = random.randint(-180, 180)
-            image = TF.rotate(image, angle)
+            if self.multi_temporal:
+                image = _transform_temporal(image, TF.rotate, angle=angle)
+            else:
+                image = TF.rotate(image, angle)
             mask = TF.rotate(mask, angle)
-        
-        image = TF.to_tensor(image)
-        mask = TF.to_tensor(mask)
+
         return image, mask
 
 
@@ -303,6 +320,6 @@ if __name__ == "__main__":
         label_files='ANNOTATIONS',
         rgb_only=True, 
         multi_temporal=True,
-        pre_load=True
+        augment=True,
         )
     next(iter(dl))
