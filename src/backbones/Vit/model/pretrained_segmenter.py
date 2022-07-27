@@ -40,7 +40,6 @@ class PreSegmenter(nn.Module):
         embedding_size = (image_size[0] // decoder.patch_size) ** 2
         self.image_size = image_size
         self.output_size = output_image_size
-        self.multi_temporal = multi_temporal
         
 
         self.encoder = EncoderVit(
@@ -50,14 +49,14 @@ class PreSegmenter(nn.Module):
             pretrained=True,
         ) if encoder is None else encoder
 
-        # if multi_temporal:
-        #     embedder = TemporalPatchEmb(
-        #         image_size,
-        #         decoder.patch_size,
-        #         decoder.d_encoder,
-        #         channels,
-        #     )
-        #     self.encoder.patch_embedding = embedder
+        if multi_temporal:
+            embedder = TemporalPatchEmb(
+                image_size,
+                decoder.patch_size,
+                decoder.d_encoder,
+                channels,
+            )
+            self.encoder.patch_embedding = embedder
 
         self.fine_tune = fine_tune
         if not self.fine_tune:
@@ -84,12 +83,8 @@ class PreSegmenter(nn.Module):
         H_ori, W_ori = im.size(-2), im.size(-1)
         im = padding(im, self.decoder.patch_size)
         H, W = im.size(-2), im.size(-1)
-
-        b, t, c, h, w = im.shape
-        x = self.encoder(im) if not self.multi_temporal else self.encoder(im.view(b*t, c, h, w))
+        x = self.encoder(im)
         rough_masks = self.decoder(x, (H, W))
-        x = x.view(b, t, c, h, w)
-        x = torch.mean(x, dim=1)
 
         if self.output_size is None:
             masks = F.interpolate(rough_masks, size=(H, W), mode="bilinear", align_corners=True)
