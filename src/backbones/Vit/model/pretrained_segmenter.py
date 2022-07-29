@@ -16,7 +16,8 @@ class EncoderVit(ptv.ViT):
         
     
     def forward(self, x):
-        x = self.patch_embedding(x).flatten(2).transpose(1, 2)
+        x = self.patch_embedding(x)
+        x = x.flatten(2).transpose(1, 2)
         # x = torch.cat((model.class_token.expand(1, -1, -1), x), dim=1)
         x = self.positional_embedding(x)
         x = self.transformer(x)
@@ -40,7 +41,7 @@ class PreSegmenter(nn.Module):
         embedding_size = (image_size[0] // decoder.patch_size) ** 2
         self.image_size = image_size
         self.output_size = output_image_size
-        
+        self.multi_temporal = multi_temporal
 
         self.encoder = EncoderVit(
             embedding_dim=embedding_size,
@@ -83,7 +84,10 @@ class PreSegmenter(nn.Module):
         H_ori, W_ori = im.size(-2), im.size(-1)
         im = padding(im, self.decoder.patch_size)
         H, W = im.size(-2), im.size(-1)
-        x = self.encoder(im)
+
+        b, t, c, h, w = im.shape
+        x = self.encoder(im) if not self.multi_temporal else\
+            self.encoder(im.view(b*t, c, h, w))
         rough_masks = self.decoder(x, (H, W))
 
         if self.output_size is None:
